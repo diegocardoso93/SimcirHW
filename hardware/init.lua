@@ -1,4 +1,11 @@
+
 -- init.lua --
+-- NodeMCU
+-- https://github.com/nodemcu/nodemcu-firmware
+-- branch: master
+-- commit: 2e67ff5a639a13260fd4fb3c3b627ccdc2845616
+-- modules: file,gpio,net,node,tmr,uart,websocket,wifi
+-- powered by Lua 5.1.4
 
 print("\n UNISC \n")
 
