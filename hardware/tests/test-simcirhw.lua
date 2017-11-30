@@ -1,6 +1,6 @@
 
-local pretty = require 'pl.pretty'
-local SimcirHW = require('simcirhw')
+local pretty = require '../pl.pretty'
+local SimcirHW = require '../simcirhw'
 
 SCH = SimcirHW()
 

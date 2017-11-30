@@ -13,11 +13,6 @@ function SimcirHW:_init()
   
   self.str_circuit = ""
   self.circuit = {}
-  
-  self.named_pins = {
-    D0=0,
-    D1=1
-  }
 end
 
 function SimcirHW:__tostring()
@@ -43,7 +38,6 @@ function SimcirHW:parse_input_sequence()
   self.input_sequence = _tbl
 
 end
-
 
 function SimcirHW:execute()
 end
