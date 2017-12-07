@@ -1,8 +1,7 @@
 
-local pretty = require '../pl.pretty'
 local SimcirHW = require '../simcirhw'
 
-SCH = SimcirHW()
+SCH = SimcirHW:new()
 
 SCH:receive_circuit(
 [===[ 

@@ -1,5 +1,5 @@
 
-local stringx = require '../pl.stringx'
+require '../utils'
 
 -- custom operator metatable hack
 -- see more: http://lua-users.org/wiki/CustomOperators
@@ -24,8 +24,8 @@ function convert_circuit(str)
     [ ' NOR ']=' -bitnor- ' ,
     [ ' XOR ']=' -bitxor- ' ,
   }
-  for old,new in pairs(map_replace) do
-    str = stringx.replace(str, old, new)
+  for old, new in pairs(map_replace) do
+    str = string.gsub(str, old, new)
   end
   return str
 end
