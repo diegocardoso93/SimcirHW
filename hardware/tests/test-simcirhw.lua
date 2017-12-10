@@ -6,18 +6,29 @@ SCH = SimcirHW:new()
 SCH:receive_circuit(
 [===[ 
 {
-outputs={"Out1"}
-,outputsVal={Out1="(In1 and not(In3)) or (In2 and In3)"}
-,inputs={"In1","In2","In3"}
-,inputsVal={In1="0",In2="1",In3="0"}
-,inputSequence={In1="0,200;1,200;0,400;1,600",Infinity=true}
-,pinMap={}
+  outputs={
+    Out1="(In1 AND NOT(In3)) OR (In2 AND In3)",
+    Out2="A OR B"
+  }
+  ,inputs={
+    In1={values={0,1,0,1},timeslices={200,200,400,600},infinity=true},
+    In2="1",
+    In3="0"
+  }
+  ,pin_map={
+    Out1="D0",
+    Out2="D1"
+  }
+  ,hardware="esp8266"
 }
 ]===])
 
 SCH:parse_circuit()
+SCH:configure_timeslices()
+SCH:start()
 
-print(tostring(SCH))
+-- test static inputs
+-- assert(SCH:read_pin("D2") == 1)
 
-SCH:parse_input_sequence()
 
+print("-- end of tests --")
