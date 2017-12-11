@@ -96,6 +96,20 @@ function SimcirHW:start()
   self:configure_gpios()
   self:configure_inputs()
   self:execute()
+  
+  local ws = websocket.createClient()
+  ws:on("connection", function() 
+    print("got ws connection")
+  end)
+  ws:on("receive", function(_, msg, code)
+    
+  end)
+  ws:on("close", function(_)
+      
+  end)
+  -- @TODO: show all wifi connected clients
+  ws:connect("ws://192.168.1.100:8080")
+  self.ws = ws
 end
 
 function SimcirHW:execute()

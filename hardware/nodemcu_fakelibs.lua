@@ -64,3 +64,60 @@ function tmr.create()
   
   return self
 end
+
+
+local websocketclient = {}
+local _websocketclient = {}
+
+function _websocketclient:start()
+  
+end
+
+
+function _websocketclient:connect(address)
+  print("request connection to " .. address)
+  self:bind("connection")
+end
+
+function _websocketclient:on(event, func)
+  if event == "connection" then
+    self.con_func = func
+  elseif event == "receive" then
+    self.rcv_func = func
+  elseif event == "close" then
+    self.cls_func = func
+  end
+end
+
+-- exs:
+-- ws:bind("receive", {msg:"yeap", opcode: 1}), -- opcode 1 text, 2 binary
+-- ws:bind("close", {status = 200}) 
+function _websocketclient:bind(event, _args)
+  if event == "connection" then
+    self.con_func(websocketclient)
+  elseif event == "receive" then
+    self.rcv_func(websocketclient, _args.msg, _args.opcode)
+  elseif event == "close" then
+    self.cls_func(websocketclient, _args.status)
+  end
+end
+
+
+function websocketclient:new()
+  self = {}
+  setmetatable(self, { __index = _websocketclient })
+  
+  self.con_func = function() end
+  self.rcv_func = function() end
+  self.cls_func = function() end
+  
+  return self
+end
+
+
+websocket = {}
+
+function websocket.createClient()
+  return websocketclient:new()
+end
+
