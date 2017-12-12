@@ -30,6 +30,10 @@ SCH.ws:bind("receive", {msg=
 }
 ]===], opcode=1})
 
+-- test if message loaded in table
+assert(SCH.message.type == "circuit")
+assert(type(SCH.message.circuit) == "table")
+
 -- test if parse simcirhw expression format correctly
 assert(SCH:get_expression("Out1") == "(In1 -bitand- bitnot(In3)) -bitor- (In2 -bitand- In3)")
 assert(SCH:get_expression("Out2") == "In1 -bitxor- In2")
