@@ -9,12 +9,12 @@ local SimcirHW = {}
 
 local HwInterface = {}
 
-function SimcirHW:receive_circuit(str_ckt)
-  self.str_circuit = str_ckt
+function SimcirHW:eval_message(str_msg)
+  self.message = loadstring("return " .. self.str_msg)()
 end
 
-function SimcirHW:parse_circuit()
-  self.circuit = loadstring("return " .. self.str_circuit)()
+function SimcirHW:prepare_circuit(circuit)
+  self.circuit = circuit
   
   for k, out in pairs(self.circuit.outputs) do
     self.expressions[k] = convert_circuit(out)
@@ -34,7 +34,7 @@ function SimcirHW:configure_gpios()
   end
 end
 
-function SimcirHW:configure_inputs()
+function SimcirHW:configure_virtual_inputs()
   for k, inp in pairs(self.circuit.inputs) do
     if type(inp) == "table" then
       local acc_time = 0
@@ -93,23 +93,11 @@ function SimcirHW:propagate()
 end
 
 function SimcirHW:start()
-  self:configure_gpios()
-  self:configure_inputs()
-  self:execute()
   
-  local ws = websocket.createClient()
-  ws:on("connection", function() 
-    print("got ws connection")
-  end)
-  ws:on("receive", function(_, msg, code)
-    
-  end)
-  ws:on("close", function(_)
-      
-  end)
-  -- @TODO: show all wifi connected clients
-  ws:connect("ws://192.168.1.100:8080")
-  self.ws = ws
+  self:configure_gpios()
+  self:configure_virtual_inputs()
+  self:execute()
+
 end
 
 function SimcirHW:execute()
@@ -124,11 +112,20 @@ end
 function SimcirHW:stop()
 end
 
+function SimcirHW:handle_ws_message(str_msg)
+  print("msg received: " .. str_msg)
+  self.message = loadstring("return " .. str_msg)()
+  
+  if self.message.type == "circuit" then
+    self:prepare_circuit(self.message.circuit)
+  end
+end
+
 function simcirhw:new()
   local self = {}
   setmetatable(self, { __index = SimcirHW })
   
-  self.str_circuit = ""
+  self.message = ""
   self.circuit = {
     inputs   = {},
     outputs  = {},
@@ -142,6 +139,22 @@ function simcirhw:new()
   }
   self.expressions = {}
   self.timer_slices = {}
+  
+  
+  local ws = websocket.createClient()
+  ws:on("connection", function() 
+    print("got ws connection")
+  end)
+  ws:on("receive", function(_, msg, code)
+    self:handle_ws_message(msg)
+  end)
+  ws:on("close", function(_)
+     print("ws connection closed")
+  end)
+  -- @TODO: show wifi connected client
+  ws:connect("ws://192.168.1.100:8080")
+  self.ws = ws
+  
   return self
 end
 

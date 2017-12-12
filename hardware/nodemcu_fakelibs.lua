@@ -1,4 +1,8 @@
 
+
+-----------------
+-- GPIO MODULE --
+-----------------
 gpio = {
   -- initial pins state
   pins = {
@@ -40,7 +44,9 @@ function gpio.read(pin, level)
 end
 
 
-
+----------------
+-- TMR MODULE --
+----------------
 tmr = {}
 local _tmr = {}
 
@@ -65,14 +71,15 @@ function tmr.create()
   return self
 end
 
-
+----------------------
+-- WEBSOCKET MODULE --
+----------------------
 local websocketclient = {}
 local _websocketclient = {}
 
 function _websocketclient:start()
   
 end
-
 
 function _websocketclient:connect(address)
   print("request connection to " .. address)
@@ -102,6 +109,9 @@ function _websocketclient:bind(event, _args)
   end
 end
 
+function _websocketclient:send(msg, opcode)
+  print("message sent: " .. msg)
+end
 
 function websocketclient:new()
   self = {}
