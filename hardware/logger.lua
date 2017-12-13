@@ -13,6 +13,7 @@ function Logger:push_state(data)
     _t.inputs[inpk] = inpv
   end
   self.data[#self.data+1] = _t
+  _t = nil
 end
 
 -- free memmory after cycle

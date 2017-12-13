@@ -1,0 +1,5 @@
+/software/app-builds
+/software/dist
+/software/node_modules
+/software/src
+/software/package-lock.json
