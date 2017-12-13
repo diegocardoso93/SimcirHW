@@ -1,12 +1,11 @@
 
 require "circuitlib"
-
 require "nodemcu_fakelibs" -- gpio, tmr fake libs (disable in real hw)
 
+local Logger = require "logger"
+
 local simcirhw = {}
-
 local SimcirHW = {}
-
 local HwInterface = {}
 
 function SimcirHW:eval_message(str_msg)
@@ -42,13 +41,10 @@ function SimcirHW:configure_virtual_inputs()
         local t_tmr = tmr.create()
         t_tmr:register(acc_time, tmr.ALARM_SINGLE, 
           function (t)
-            self:update_input_state(k, inp.values[i])
+            self.state.inputs[k] = inp.values[i]
             self:eval()
             self:propagate()
-            -- temporary debug here
-            for x, y in pairs(self.state.outputs) do
-              print(x .. " -> " .. y)
-            end
+            self:register_log()
             t:unregister()
           end)
         acc_time = acc_time + time
@@ -57,8 +53,10 @@ function SimcirHW:configure_virtual_inputs()
       end
     else
       -- static input
-      self:update_input_state(k, inp)
+      self.state.inputs[k] = inp
       self:eval()
+      self:propagate()
+      self:register_log()
     end
   end
 end
@@ -72,10 +70,6 @@ function SimcirHW:eval()
   for out, exp in pairs(self.expressions) do
     self.state.outputs[out] = loadstring(str_exec .. "return " .. exp)()
   end
-end
-
-function SimcirHW:update_input_state(k, v)
-  self.state.inputs[k] = v
 end
 
 function SimcirHW:read_pin(label)
@@ -112,6 +106,12 @@ end
 function SimcirHW:stop()
 end
 
+function SimcirHW:destroy()
+  self.ws = nil
+  self = nil
+  collectgarbage()
+end
+
 function SimcirHW:handle_ws_message(str_msg)
   print("msg received: " .. str_msg)
   self.message = loadstring("return " .. str_msg)()
@@ -119,6 +119,10 @@ function SimcirHW:handle_ws_message(str_msg)
   if self.message.type == "circuit" then
     self:prepare_circuit(self.message.circuit)
   end
+end
+
+function SimcirHW:register_log()
+  self.logger:push_state(self.state)
 end
 
 function simcirhw:new()
@@ -134,8 +138,8 @@ function simcirhw:new()
     cycles   = {},
   }
   self.state = {
-    outputs    = {},
-    inputs     = {}
+    outputs = {},
+    inputs  = {}
   }
   self.expressions = {}
   self.timer_slices = {}
@@ -154,6 +158,8 @@ function simcirhw:new()
   -- @TODO: show wifi connected client
   ws:connect("ws://192.168.1.100:8080")
   self.ws = ws
+  
+  self.logger = Logger:new()
   
   return self
 end

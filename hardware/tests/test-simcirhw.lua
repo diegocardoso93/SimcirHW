@@ -44,4 +44,6 @@ In1 = 1; In2 = 0; In3 = 1
 assert(SCH.state.outputs["Out1"] == ((In1 -bitand- bitnot(In3)) -bitor- (In2 -bitand- In3)))
 assert(SCH.state.outputs["Out2"] == In1 -bitxor- In2)
 
+print(SCH.logger:dump())
+
 print("-- end of tests --")
