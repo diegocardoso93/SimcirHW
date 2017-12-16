@@ -1880,6 +1880,7 @@ simcir.$ = function() {
         }
         devices.push(deviceDef);
       });
+
       return {
         width: data.width,
         height: data.height,
@@ -1890,6 +1891,162 @@ simcir.$ = function() {
         connectors: connectors
       };
     };
+
+    var getValidation = function() {
+      var message = '';
+      var ckt_status = 0;
+      var devIdCount = 0;
+      $devicePane.children('.simcir-device').each(function() {
+        var $dev = $(this);
+        var device = controller($dev);
+        var devId = 'dev' + devIdCount++;
+        device.id = devId;
+        $.each(device.getInputs(), function(i, node) {
+          node.id = devId + '.in' + i;
+        });
+        $.each(device.getOutputs(), function(i, node) {
+          node.id = devId + '.out' + i;
+        });
+      });
+
+      var devices = [];
+      var connectors = [];
+      var arrOutputs = [];
+      var arrInputs = [];
+      var clone = function(obj) {
+        return JSON.parse(JSON.stringify(obj));
+      };
+      var checkIfNextIsOut = function (inConn, objToId) {
+        var outObj = null;
+        inConn.forEach(function (t) {
+          if (t.to.split('.')[0] == objToId.to.split('.')[0] && t != objToId) {
+            devices.forEach(function (x) {
+              if (x.id == t.from.split('.')[0]) {
+                if (x.type == 'Out') {
+                  outObj = x;
+                }
+              }
+            });
+          }
+        });
+        return outObj;
+      };
+      var getDevIdToByFrom = function (inConn, fromId) {
+        var toId = [];
+        inConn.forEach(function (t) {
+          if (t.from.split('.')[0] == fromId) {
+            var outObj = checkIfNextIsOut(inConn, t);
+            if (outObj) {
+              toId.push(outObj.id);
+            } else {
+              toId.push(t.to.split('.')[0]);
+            }
+          }
+        });
+        return toId;
+      };
+      var getDeviceTypeById = function (devices, id) {
+        var devType = "";
+        devices.forEach(function (t) {
+          if (t.id == id) {
+            devType = t.type == "In" || t.type == "Out" ? t.label : t.type;
+          }
+        });
+        return devType;
+      };
+      var forTheEnd = function(id, connectors, devices, arrRet) {
+        if (id == "") return;
+        var ids = getDevIdToByFrom(connectors, id);
+        ids.forEach(function (id) {
+          var device = getDeviceTypeById(devices, id);
+          if ( ['AND', 'OR', 'NOT', 'NAND', 'NOR', 'EOR', "ENOR"].indexOf(device) >= 0
+            || device.indexOf('In') >= 0 ) {
+            arrRet.push(device);
+            forTheEnd(id, connectors, devices, arrRet);
+          }
+          if (device.indexOf('Out') >= 0) {
+            arrRet.push(device);
+          }
+        });
+      };
+      $devicePane.children('.simcir-device').each(function() {
+        var $dev = $(this);
+        var device = controller($dev);
+        $.each(device.getInputs(), function(i, inNode) {
+          if (inNode.getOutput() != null) {
+            connectors.push({from:inNode.id, to:inNode.getOutput().id});
+          }
+        });
+        var pos = transform($dev);
+        var deviceDef = clone(device.deviceDef);
+        deviceDef.id = device.id;
+        deviceDef.x = pos.x;
+        deviceDef.y = pos.y;
+        deviceDef.label = device.getLabel();
+        var state = device.getState();
+        if (state != null) {
+          deviceDef.state = state;
+        }
+        devices.push(deviceDef);
+        if (device.getLabel().substring(0, 3) == 'Out') {
+          arrOutputs.push(deviceDef);
+        } else {
+          arrInputs.push(deviceDef);
+        }
+      });
+
+      var rpnToInfix = function (input) {
+        var ar = input.split(/\s+/), st = [], token;
+        while(token = ar.shift()) {
+          if (['AND', 'OR', 'NOT', 'NAND', 'NOR', 'XOR', 'XNOR'].indexOf(token) >= 0) {
+            if (token == 'NOT') {
+              var n2 = st.pop();
+              st.push(token + '(' + n2 + ')');
+            } else {
+              var n2 = st.pop(), n1 = st.pop();
+              st.push('(' + n1 + ' ' + token + ' ' + n2 + ')');
+            }
+          } else if (token.indexOf('In') >= 0){
+            st.push(token);
+          } else if (token.indexOf('Out') >= 0){
+            st.push(token);
+          }
+        }
+        if(st.length !== 1) {
+          message = LANG["ERR_INVALID_CIRCUIT"];
+        }
+        return st.pop();
+      };
+
+      if (arrOutputs.length > 0) {
+        $.each(arrOutputs, function (i, devOut) {
+          //console.log(devOut.label); //root
+          var root = devOut.label;
+          var arrRet = [];
+          forTheEnd(devOut.id, connectors, devices, arrRet);
+          var str_rpn = arrRet.reverse().join(' ');
+          //console.log(str_rpn);
+          //console.log(rpnToInfix(str_rpn));
+          str_rpn = rpnToInfix(str_rpn);
+          //console.log(CircuitParser.parse(str_rpn));
+          var parse_result = CircuitParser.parse(str_rpn);
+          if (!(typeof(parse_result) === 'object')) {
+            ckt_status = 1;
+            message = LANG["SUC_VALID_CIRCUIT"];
+          } else {
+            message = LANG["ERR_INVALID_CIRCUIT"];
+          }
+        });
+      } else {
+        message = LANG["ERR_OUT_FAULT"];
+      }
+
+      return {
+        status: ckt_status,
+        message: message
+      };
+    }
+
     var getText = function() {
 
       var data = getData();
@@ -2143,9 +2300,17 @@ simcir.$ = function() {
     });
     updateConnectors();
 
+    var validateCircuit = function() {
+      var validation = getValidation();
+      if (validation.message.length>0) {
+        alert(validation.message);
+      }
+    };
+
     controller($workspace, {
       data: getData,
-      text: getText
+      text: getText,
+      validate: validateCircuit
     });
 
     return $workspace;

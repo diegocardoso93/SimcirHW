@@ -9,7 +9,7 @@
 //	Grammar:
 //	Expression <- Term ( _ ('AND' / 'OR' / 'NAND' / 'NOR' / 'XOR' / 'XNOR') _ Term)*
 //	Term       <- _ '(' Expression ')' _ / 'NOT(' _ Expression _ ')' / Operand
-//	Operand    <- ([A-z]+[0-9]*)*[0-1]*
+//	Operand    <- (!"undefined" !"Out" [A-z]+[0-9]* / [0-1])*
 //	_          <- [ \t\n\r]*
 
 Expression
@@ -30,7 +30,7 @@ Term
   / Operand
 
 Operand "Operand"
-  = ([A-z]+[0-9]*)*[0-1]* {
+  = (!"undefined" !"Out" [A-z]+[0-9]* / [0-1])* {
   	return (text()==0 || text()==1) ?
     	parseInt(text(), 2) : 1;
   }

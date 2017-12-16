@@ -155,7 +155,6 @@ function simcirhw:new()
   ws:on("close", function(_)
      print("ws connection closed")
   end)
-  -- @TODO: show wifi connected client
   ws:connect("ws://192.168.1.100:8080")
   self.ws = ws
   

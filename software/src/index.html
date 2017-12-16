@@ -11,16 +11,19 @@
     <div>
       <button id="getDataBtn">v get data v</button>
       <button id="setDataBtn">^ set data ^</button>
+      <button id="validateBtn">validate</button>
     </div>
     <textarea id="dataArea" style="width:600px; height:200px;"></textarea>
   
 	<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 	<script type="text/javascript" src="jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="lang/ptbr.js"></script>
+  <script type="text/javascript" src="circuit-parser.js"></script>
 	<script type="text/javascript" src="simcir.js"></script>
-    <script type="text/javascript" src="simcir-basicset.js"></script>
+  <script type="text/javascript" src="simcir-basicset.js"></script>
 	<script type="text/javascript" src="simcir-library.js"></script>
-    <script type="text/javascript" src="misc/simcir-dso.js"></script>
-    <script type="text/javascript">
+  <script type="text/javascript" src="misc/simcir-dso.js"></script>
+  <script type="text/javascript">
 $(function() {
 
   var $s = simcir;
@@ -37,16 +40,20 @@ $(function() {
 
   // button click events
   $('#getDataBtn').click(function() {
-    $('#dataArea').val(getCircuitData() );
+    $('#dataArea').val(getCircuitData());
   });
   $('#setDataBtn').click(function() {
-    setCircuitData($('#dataArea').val() );
+    setCircuitData($('#dataArea').val());
+  });
+  $('#validateBtn').click(function() {
+    $s.controller(
+      $simcir.find('.simcir-workspace') ).validate();
   });
 
   // load default (just specifies circuit size).
   setCircuitData('{ "width":600, "height":400 }');
 });
-    </script>
+  </script>
 	<script>if (window.module) module = window.module;</script>
   </body>
 </html>
