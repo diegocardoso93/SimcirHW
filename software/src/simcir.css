@@ -9,6 +9,10 @@
  *  http://www.opensource.org/licenses/mit-license.php
  */
 
+* {
+  font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+}
+
 .simcir-body {
   display: inline-block;
 }
