@@ -3,13 +3,13 @@
 // ------------------------
 //
 // Accept expressions like: "(In1 AND In2) XOR (In1 OR NOT(In2))" -- only for syntax check
-//                          "(In1:1 AND In2:1) XOR (In1:0 OR NOT(In2:1))" -- for eval
+//                          "(1 AND 1) XOR (0 OR NOT(1))" -- for eval
 // https://pegjs.org/online
 // ------------------------
 //	Grammar:
 //	Expression <- Term ( _ ('AND' / 'OR' / 'NAND' / 'NOR' / 'XOR' / 'XNOR') _ Term)*
 //	Term       <- _ '(' Expression ')' _ / 'NOT(' _ Expression _ ')' / Operand
-//	Operand    <- [A-z]+[0-9]*[:0-1]*
+//	Operand    <- ([A-z]+[0-9]*)*[0-1]*
 //	_          <- [ \t\n\r]*
 
 Expression
@@ -30,9 +30,9 @@ Term
   / Operand
 
 Operand "Operand"
-  = [A-z]+[0-9]*[:0-1]* {
-  	return (text().indexOf(':')) ?
-    	parseInt(text().split(':')[1], 2) : 1;
+  = ([A-z]+[0-9]*)*[0-1]* {
+  	return (text()==0 || text()==1) ?
+    	parseInt(text(), 2) : 1;
   }
 
 _ "whitespace"
