@@ -1894,7 +1894,7 @@ simcir.$ = function() {
 
     var getValidation = function() {
       var message = '';
-      var ckt_status = 0;
+      var ckt_valid = 0;
       var devIdCount = 0;
       $devicePane.children('.simcir-device').each(function() {
         var $dev = $(this);
@@ -1937,7 +1937,7 @@ simcir.$ = function() {
           if (t.from.split('.')[0] == fromId) {
             var outObj = checkIfNextIsOut(inConn, t);
             if (outObj) {
-              toId.push(outObj.id);
+              message = "ERRONE";
             } else {
               toId.push(t.to.split('.')[0]);
             }
@@ -1959,14 +1959,8 @@ simcir.$ = function() {
         var ids = getDevIdToByFrom(connectors, id);
         ids.forEach(function (id) {
           var device = getDeviceTypeById(devices, id);
-          if ( ['AND', 'OR', 'NOT', 'NAND', 'NOR', 'EOR', "ENOR"].indexOf(device) >= 0
-            || device.indexOf('In') >= 0 ) {
-            arrRet.push(device);
-            forTheEnd(id, connectors, devices, arrRet);
-          }
-          if (device.indexOf('Out') >= 0) {
-            arrRet.push(device);
-          }
+          arrRet.push(device);
+          forTheEnd(id, connectors, devices, arrRet);
         });
       };
       $devicePane.children('.simcir-device').each(function() {
@@ -1982,22 +1976,23 @@ simcir.$ = function() {
         deviceDef.id = device.id;
         deviceDef.x = pos.x;
         deviceDef.y = pos.y;
+        deviceDef.type = device.deviceDef.type;
         deviceDef.label = device.getLabel();
         var state = device.getState();
         if (state != null) {
           deviceDef.state = state;
         }
         devices.push(deviceDef);
-        if (device.getLabel().substring(0, 3) == 'Out') {
+        if (deviceDef.type == 'Out') {
           arrOutputs.push(deviceDef);
-        } else {
+        } else if (deviceDef.type == 'In') {
           arrInputs.push(deviceDef);
         }
       });
 
       var rpnToInfix = function (input) {
         var ar = input.split(/\s+/), st = [], token;
-        while(token = ar.shift()) {
+        while (token = ar.shift()) {
           if (['AND', 'OR', 'NOT', 'NAND', 'NOR', 'XOR', 'XNOR'].indexOf(token) >= 0) {
             if (token == 'NOT') {
               var n2 = st.pop();
@@ -2006,9 +2001,7 @@ simcir.$ = function() {
               var n2 = st.pop(), n1 = st.pop();
               st.push('(' + n1 + ' ' + token + ' ' + n2 + ')');
             }
-          } else if (token.indexOf('In') >= 0){
-            st.push(token);
-          } else if (token.indexOf('Out') >= 0){
+          } else {
             st.push(token);
           }
         }
@@ -2020,18 +2013,16 @@ simcir.$ = function() {
 
       if (arrOutputs.length > 0) {
         $.each(arrOutputs, function (i, devOut) {
-          //console.log(devOut.label); //root
           var root = devOut.label;
           var arrRet = [];
           forTheEnd(devOut.id, connectors, devices, arrRet);
           var str_rpn = arrRet.reverse().join(' ');
-          //console.log(str_rpn);
-          //console.log(rpnToInfix(str_rpn));
+          console.log(str_rpn)
           str_rpn = rpnToInfix(str_rpn);
-          //console.log(CircuitParser.parse(str_rpn));
+          console.log(str_rpn)
           var parse_result = CircuitParser.parse(str_rpn);
           if (!(typeof(parse_result) === 'object')) {
-            ckt_status = 1;
+            ckt_valid = 1;
             message = LANG["SUC_VALID_CIRCUIT"];
           } else {
             message = LANG["ERR_INVALID_CIRCUIT"];
@@ -2042,7 +2033,7 @@ simcir.$ = function() {
       }
 
       return {
-        status: ckt_status,
+        valid: ckt_valid,
         message: message
       };
     }
