@@ -47,13 +47,13 @@
 }
 
 .simcir-connector {
-  stroke-width: 1;
+  stroke-width: 2;
   stroke: #0000ff;
   stroke-linecap: round;
 }
 
 .simcir-connector-hot {
-  /* stroke: #ff0000; */
+  stroke: #ff0000;
 }
 
 .simcir-joint-point {
