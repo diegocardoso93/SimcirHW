@@ -1146,7 +1146,12 @@ simcir.$ = function() {
         var $dlg = showDialog(title, $placeHolder);
         $labelEditor.focus();
       };
-      device.$ui.on('deviceAdd', function() {
+      device.$ui.on('deviceAdd', function(event) {
+        var $workspace = $(event.target).closest('.simcir-workspace');
+        let getLabelWithNumber = function(type) {
+          return type + controller($workspace).data().devices.reduce((count, dev) => dev.type == type ? count+1 : 0 , -1);
+        };
+        setLabel(getLabelWithNumber(defaultLabel));
         $label.on('dblclick', label_dblClickHandler);
       } );
       device.$ui.on('deviceRemove', function() {
@@ -1936,9 +1941,7 @@ simcir.$ = function() {
         inConn.forEach(function (t) {
           if (t.from.split('.')[0] == fromId) {
             var outObj = checkIfNextIsOut(inConn, t);
-            if (outObj) {
-              message = "ERRONE";
-            } else {
+            if (!outObj) {
               toId.push(t.to.split('.')[0]);
             }
           }
@@ -2017,9 +2020,7 @@ simcir.$ = function() {
           var arrRet = [];
           forTheEnd(devOut.id, connectors, devices, arrRet);
           var str_rpn = arrRet.reverse().join(' ');
-          console.log(str_rpn)
           str_rpn = rpnToInfix(str_rpn);
-          console.log(str_rpn)
           var parse_result = CircuitParser.parse(str_rpn);
           if (!(typeof(parse_result) === 'object')) {
             ckt_valid = 1;
