@@ -751,7 +751,7 @@
   $s.registerDevice('Toggle', createSwitchFactory('Toggle') );
 
   // register logic gates
-  $s.registerDevice('BUF', createLogicGateFactory(null, BUF, drawBUF) );
+  //$s.registerDevice('BUF', createLogicGateFactory(null, BUF, drawBUF) );
   $s.registerDevice('NOT', createLogicGateFactory(null, NOT, drawNOT) );
   $s.registerDevice('AND', createLogicGateFactory(AND, BUF, drawAND) );
   $s.registerDevice('NAND', createLogicGateFactory(AND, NOT, drawNAND) );
