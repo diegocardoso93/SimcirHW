@@ -1148,10 +1148,12 @@ simcir.$ = function() {
       };
       device.$ui.on('deviceAdd', function(event) {
         var $workspace = $(event.target).closest('.simcir-workspace');
-        let getLabelWithNumber = function(type) {
-          return type + controller($workspace).data().devices.reduce((count, dev) => dev.type == type ? count+1 : 0 , -1);
-        };
-        setLabel(getLabelWithNumber(defaultLabel));
+        if (controller($workspace)) {
+          let getLabelWithNumber = function (type) {
+            return type + controller($workspace).data().devices.reduce((count, dev) => dev.type == type ? count + 1 : count, 0);
+          };
+          setLabel(getLabelWithNumber(defaultLabel));
+        }
         $label.on('dblclick', label_dblClickHandler);
       } );
       device.$ui.on('deviceRemove', function() {
@@ -2133,6 +2135,7 @@ simcir.$ = function() {
       };
       dragCompleteHandler = function(event) {
         var $target = $(event.target);
+        console.log($.data($dev[0], 'controller'))
         if ($target.closest('.simcir-toolbox').length == 0) {
           $dev.detach();
           var pos = transform($dev);
