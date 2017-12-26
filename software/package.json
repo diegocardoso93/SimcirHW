@@ -3,20 +3,20 @@
   "version": "1.0.0",
   "description": "",
   "homepage": "",
-  "main": "main.js",
+  "main": "app-main.js",
   "scripts": {
-    "install": "npm rebuild --runtime=electron --target=1.7.9 --disturl=https://atom.io/download/atom-shell --build-from-source",
+    "install": "npm rebuild --runtime=electron --target=1.7.10 --disturl=https://atom.io/download/atom-shell --build-from-source",
     "build": "copyfiles -f ./src/* dist",
-    "electron:serve": "electron ./src/main.js --serve",
-    "electron:dist": "npm run build && electron dist/main.js",
-    "electron:linux": "npm run build && electron-packager dist --overwrite --platform=linux --arch=x64 --asar=true  --out=app-builds --electron-version=1.7.9",
-    "electron:windows": "npm run build && electron-packager dist --overwrite --platform=win32 --arch=x64 --asar=true --out=app-builds --electron-version=1.7.9",
-    "electron:mac": "npm run build && electron-packager dist --overwrite --platform=darwin --arch=x64 --asar=true --out=app-builds --electron-version=1.7.9"
+    "electron:serve": "electron ./src/app-main.js --serve",
+    "electron:dist": "npm run build && electron dist/app-main.js",
+    "electron:linux": "npm run build && electron-packager dist --overwrite --platform=linux --arch=x64 --asar=true  --out=app-builds --electron-version=1.7.10",
+    "electron:windows": "npm run build && electron-packager dist --overwrite --platform=win32 --arch=x64 --asar=true --out=app-builds --electron-version=1.7.10",
+    "electron:mac": "npm run build && electron-packager dist --overwrite --platform=darwin --arch=x64 --asar=true --out=app-builds --electron-version=1.7.10"
   },
   "dependencies": {},
   "devDependencies": {
     "copyfiles": "1.2.0",
-    "electron": "1.7.5",
+    "electron": "1.7.10",
     "electron-context-menu": "0.9.1",
     "electron-packager": "10.1.0",
     "electron-rebuild": "1.6.0",
