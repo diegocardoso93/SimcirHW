@@ -1,18 +1,19 @@
 'use strict';
-const electron = require('electron');
-// Module to control application life.
-const {app, ipcMain} = electron;
-// Module to create native browser window.
-const {BrowserWindow} = electron;
+const {app, BrowserWindow, ipcMain, shell, dialog, Menu} = require('electron');
 
-let win, serve;
+const path = require('path');
+const url = require('url');
+const fs = require('fs');
+const appMenu = require('./app-menu.js');
+
+let mainWindow, serve;
 const args = process.argv.slice(1);
 serve = args.some(val => val === "--serve");
 
 if (serve) {
   require('electron-reload')(__dirname, {
     electron: require('${__dirname}/../../node_modules/electron')
-  })
+  });
   require('electron-context-menu')({
   	prepend: (params, browserWindow) => [{
   	}]
@@ -21,54 +22,86 @@ if (serve) {
 
 function createWindow() {
 
-    let electronScreen = electron.screen;
-    let size = electronScreen.getPrimaryDisplay().workAreaSize;
+  Menu.setApplicationMenu(Menu.buildFromTemplate(appMenu));
 
-    // Create the browser window.
-    win = new BrowserWindow({
-        width: 1200,
-        height: 860,
-        icon: __dirname + '/favicon.ico'
-    });
-    win.setMenu(null);
+  let width = 1200, height = 860;
 
-    let url = 'file://' + __dirname + '/index.html';
-
-    // and load the index.html of the app.
-    win.loadURL(url);
-
-    // Open the DevTools.
-    if (serve) {
-      win.webContents.openDevTools();
+  const screen = require('electron').screen;
+  if (screen) {
+    const display = screen.getPrimaryDisplay();
+    if (display && display.workArea) {
+      width = display.workArea.width || width;
+      height = display.workArea.height || height;
     }
+  }
 
-    // Emitted when the window is closed.
-    win.on('closed', () => {
-        // Dereference the window object, usually you would store windows
-        // in an array if your app supports multi windows, this is the time
-        // when you should delete the corresponding element.
-        win = null;
+  mainWindow = new BrowserWindow({
+    width: width,
+    height: height,
+    minWidth: 400,
+    minHeight: 400,
+    textAreasAreResizable: false,
+    plugins: true,
+    show: false,
+    icon: __dirname + '/favicon.ico'
+  });
+
+  /*
+  dialog.showSaveDialog(mainWindow,
+    {
+      title: 'Salvar como...',
+      buttonLabel: 'Salvar',
+      filters: [
+        {name: 'SimcirHW Schematic File', extensions: ['simcirhw']}
+      ]
+    },
+    (filename) => console.log(filename)
+  );*/
+
+  mainWindow.loadURL(url.format({
+    pathname: path.join(__dirname, 'index.html'),
+    protocol: 'file:',
+    slashes: true
+  }));
+
+  if (serve) {
+    mainWindow.webContents.openDevTools();
+  }
+
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+    mainWindow.maximize();
+  });
+
+  //mainWindow.setProgressBar(0.5, {mode: 'normal'});
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    /*
+    mainWindow.webContents.printToPDF({}, (error, data) => {
+      if (error) throw error;
+      fs.writeFile(path.join(__dirname, '/print.pdf'), data, (error) => {
+        if (error) throw error;
+        console.log('Write PDF successfully.');
+      });
     });
+    */
+  });
+
+  mainWindow.on('closed', function () {
+    mainWindow = null;
+  })
 }
 
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
 app.on('ready', createWindow);
 
-// Quit when all windows are closed.
 app.on('window-all-closed', () => {
-    // On OS X it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
 });
 
 app.on('activate', () => {
-    // On OS X it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (win === null) {
-        createWindow();
-    }
+  if (mainWindow === null) {
+    createWindow();
+  }
 });
