@@ -71,6 +71,10 @@ function tmr.create()
   return self
 end
 
+function tmr.now()
+  return os.clock()
+end
+
 ----------------------
 -- WEBSOCKET MODULE --
 ----------------------
