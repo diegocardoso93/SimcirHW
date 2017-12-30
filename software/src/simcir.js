@@ -1155,7 +1155,9 @@ simcir.$ = function() {
           };
           setLabel(getLabelWithNumber(defaultLabel));
         }
-        $label.on('dblclick', label_dblClickHandler);
+        if (defaultLabel != 'OSC') {
+          $label.on('dblclick', label_dblClickHandler);
+        }
       } );
       device.$ui.on('deviceRemove', function() {
         $label.off('dblclick', label_dblClickHandler);
@@ -2442,6 +2444,7 @@ simcir.$ = function() {
 
   $.extend($s, {
     registerDevice: registerDevice,
+    showDialog: showDialog,
     clearSimcir: clearSimcir,
     setupSimcir: setupSimcir,
     createWorkspace: createWorkspace,

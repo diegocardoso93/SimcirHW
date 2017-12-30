@@ -772,18 +772,95 @@
     g.lineTo(16, 25);
     g.lineTo(24, 25);
     g.lineTo(24, 8);
-    g.closePath();;
-    var freq = device.deviceDef.freq || 10;
-    var delay = ~~(500 / freq);
+    g.closePath();
     var out1 = device.addOutput();
     var timerId = null;
-    var on = false;
-    device.$ui.on('deviceAdd', function() {
-      timerId = window.setInterval(function() {
-        out1.setValue(on? onValue : offValue);
-        on = !on;
-      }, delay);
+
+    var arrValues = [];
+    var arrDelays = [];
+    var osc_dblClickHandler = function(event) {
+
+      event.preventDefault();
+      event.stopPropagation();
+      var title = 'Configuração de OSC ';
+      var $btnSalvarOSC = $('<button>Salvar</button>').
+      on('click', function(event) {
+          if ($('input[name="value[]"]').length == 0){
+            alert("adicione uma sequencia");
+            return;
+          }
+
+          arrDelays = [];
+          arrValues = [];
+          var slices = [];
+
+          var delays = $('input[name="time[]"]');
+          var values = $('input[name="value[]"]');
+          var acTime = 10;
+          $.each(delays, function(i, elem) {
+            if (typeof elem == 'function' || elem.value == '') return; // workaround
+            var [val, time] = [values[i].value, elem.value];
+            arrDelays.push(time);
+            arrValues.push(val);
+            slices.push([function(val){
+              out1.setValue(Number(val)? onValue : offValue);
+            }, acTime, val]);
+            acTime += Number(time);
+          });
+
+          if (timerId != null) {
+            window.clearInterval(timerId);
+            timerId = null;
+          }
+
+          timerId = window.setInterval(function(slices) {
+            slices.map(function(slice) { window.setTimeout(...slice); });
+          }, acTime, slices);
+
+          //$dlg.remove();
+
+      });
+
+      var tagsToReplace = {
+        '"': '&quot;',
+        '<': '&lt;',
+        '>': '&gt;'
+      };
+      function replace_tag(tag) {
+        return tagsToReplace[tag] || tag;
+      }
+      function safe_tags_replace(str) {
+        return str.replace(/["<>]/g, replace_tag);
+      }
+
+      var sliceTemplate = `
+      <div>
+        sinal(0,1): <input type="text" style="width:30px;" name="value[]" />
+        tempo(ms)[min 100]: <input type="text" style="width:30px" name="time[]" />
+      </div>`;
+      var savedData = '';
+      if (arrValues.length > 0) {
+        arrValues.forEach(function (value, i) {
+          savedData += `
+          <div>
+            sinal(0,1): <input type="text" style="width:30px;" name="value[]" value="${value}" />
+            tempo(ms)[min 100]: <input type="text" style="width:30px" name="time[]" value="${arrDelays[i]}" />
+          </div>`;
+        });
+      }
+
+      var btnAddAction = "$(this).before($(\'"+safe_tags_replace(sliceTemplate)+"\'))";
+      var $bodyDialog = $('<div style="font-size:12px"></div>').
+      append(savedData).
+      append('<button onclick="'+btnAddAction+'">+</button> ').
+      append($btnSalvarOSC);
+      var $dlg = $s.showDialog(title, $bodyDialog);
+    };
+
+    device.$ui.on('deviceAdd', function(event) {
+      osc_dblClickHandler(event);
     });
+    device.$ui.on('dblclick', osc_dblClickHandler);
     device.$ui.on('deviceRemove', function() {
       if (timerId != null) {
         window.clearInterval(timerId);
