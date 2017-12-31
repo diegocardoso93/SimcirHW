@@ -13,7 +13,10 @@
     "electron:windows": "npm run build && electron-packager dist --overwrite --platform=win32 --arch=x64 --asar=true --out=app-builds --electron-version=1.7.10",
     "electron:mac": "npm run build && electron-packager dist --overwrite --platform=darwin --arch=x64 --asar=true --out=app-builds --electron-version=1.7.10"
   },
-  "dependencies": {},
+  "dependencies": {
+    "express": "^4.16.2",
+    "ws": "^3.3.3"
+  },
   "devDependencies": {
     "copyfiles": "1.2.0",
     "electron": "1.7.10",

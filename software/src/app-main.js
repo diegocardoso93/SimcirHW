@@ -4,7 +4,8 @@ const {app, BrowserWindow, ipcMain, shell, dialog, Menu} = require('electron');
 const path = require('path');
 const url = require('url');
 const fs = require('fs');
-const appMenu = require('./app-menu.js');
+const appMenu = require('./app-menu');
+const appServer = require('./app-server');
 
 let mainWindow, serve;
 const args = process.argv.slice(1);
@@ -22,6 +23,7 @@ if (serve) {
 
 function createWindow() {
 
+  appServer.startServer();
   Menu.setApplicationMenu(Menu.buildFromTemplate(appMenu));
 
   let width = 1200, height = 860;
@@ -58,11 +60,7 @@ function createWindow() {
     (filename) => console.log(filename)
   );*/
 
-  mainWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'index.html'),
-    protocol: 'file:',
-    slashes: true
-  }));
+  mainWindow.loadURL('http://localhost:9061');
 
   if (serve) {
     mainWindow.webContents.openDevTools();

@@ -49,8 +49,8 @@ template is:
   type="datalog",
   data={
     {
-      inputs={}
-      outputs={}
+      inputs={},
+      outputs={},
       localtime=nil
     },
     [...]

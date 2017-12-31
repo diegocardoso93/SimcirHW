@@ -155,7 +155,7 @@ function simcirhw:new()
   ws:on("close", function(_)
      print("ws connection closed")
   end)
-  ws:connect("ws://192.168.1.100:8080")
+  ws:connect("ws://192.168.1.100:9061")
   self.ws = ws
   
   self.logger = Logger:new()
