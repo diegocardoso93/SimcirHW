@@ -66,14 +66,14 @@ var DataJSLua = (function () {
             .replace(/\\$/g, '\\\\');
     }
 
-	function tableStrToJsStr(str) {
-		return str.replace(/\s/g,'')
-      .replace(/{({[^{].*,.*})(}}})/g, '[$1}]}')
+  function tableStrToJsStr(str) {
+    return str.replace(/\s/g,'')
+      .replace(/{({.*,.*})(}})/g, '[$1]}')
       .replace(/{/g, '{"')
       .replace(/=/g, '":')
       .replace(/(,)([a-zA-Z])/g, '$1"$2')
       .replace(/'/g, '"');
-	}
+  }
 	
 	return {
         jsObjToTableStr: convert,

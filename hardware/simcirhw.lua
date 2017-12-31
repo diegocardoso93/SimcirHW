@@ -22,7 +22,7 @@ function SimcirHW:prepare_circuit(circuit)
   HwInterface = require(self.circuit.hardware)
 end
 
-function SimcirHW:configure_gpios()
+function SimcirHW:configure_hw_gpios()
   for k, v in pairs(self.circuit.pin_map) do
     if self.circuit.inputs[k] then
       gpio.mode(HwInterface.get_pin(v), gpio.INPUT)
@@ -33,8 +33,9 @@ function SimcirHW:configure_gpios()
   end
 end
 
-function SimcirHW:configure_virtual_inputs()
+function SimcirHW:configure_inputs()
   for k, inp in pairs(self.circuit.inputs) do
+    -- virtual input
     if type(inp) == "table" then
       local acc_time = 0
       for i, time in ipairs(inp.timeslices) do
@@ -48,7 +49,6 @@ function SimcirHW:configure_virtual_inputs()
             t:unregister()
           end)
         acc_time = acc_time + time
-        -- TODO: sort by index?!
         self.timer_slices[#self.timer_slices+1] = t_tmr
       end
     else
@@ -88,18 +88,20 @@ end
 
 function SimcirHW:start()
   
-  self:configure_gpios()
-  self:configure_virtual_inputs()
+  self:configure_hw_gpios()
+  self:configure_inputs()
   self:execute()
 
 end
 
 function SimcirHW:execute()
   self:propagate()
-  for i = 0, self.circuit.cycles, 1 do
+  for i = 1, self.circuit.cycles, 1 do
     for _, t in ipairs(self.timer_slices) do
       t:start()
     end
+    self.logger:format_message_to_send()
+    self.ws:send(self.logger.message)
   end
 end
 
@@ -129,7 +131,7 @@ function simcirhw:new()
   local self = {}
   setmetatable(self, { __index = SimcirHW })
   
-  self.message = ""
+  self.message = nil
   self.circuit = {
     inputs   = {},
     outputs  = {},
