@@ -2009,7 +2009,7 @@ simcir.$ = function() {
               var n2 = st.pop(), n1 = st.pop();
               st.push('(' + n1 + ' ' + token + ' ' + n2 + ')');
             }
-          } else {
+          } else if (['DC', 'OSC', 'PushOff', 'PushOn', 'Toggle'].indexOf(token) == -1){
             st.push(token);
           }
         }
@@ -2034,6 +2034,32 @@ simcir.$ = function() {
             message = LANG["ERR_INVALID_CIRCUIT"];
           }
         });
+        var inputs = [];
+        $.each(arrInputs, function(i, devIn) {
+          var to = getDevIdToByFrom(connectors, devIn.id);
+          devices.forEach(function (x) {
+            if (x.id == to) {
+              if (x.type == 'DC') {
+                var _t = {};
+                _t[devIn['label']] = 1;
+                inputs.push(_t);
+              } else if (x.type == 'GND') {
+                var _t = {};
+                _t[devIn['label']] = 0;
+                inputs.push(_t);
+              } else if (x.type == 'OSC') {
+                var _t = {};
+                _t[devIn['label']] = {};
+                _t[devIn['label']]['timeslices'] = x.timeslices;
+                _t[devIn['label']]['values'] = x.values;
+
+                inputs.push(_t);
+              }
+            }
+          });
+        });
+        console.log(inputs)
+        console.log(DataJSLua.jsObjToTableStr(inputs))
       } else {
         message = LANG["ERR_OUT_FAULT"];
       }

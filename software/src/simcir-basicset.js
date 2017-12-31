@@ -776,8 +776,8 @@
     var out1 = device.addOutput();
     var timerId = null;
 
-    var arrValues = [];
-    var arrDelays = [];
+    var arrValues = device.deviceDef.values || [];
+    var arrDelays = device.deviceDef.timeslices || [];
     var osc_dblClickHandler = function(event) {
 
       event.preventDefault();
@@ -796,17 +796,29 @@
 
           var delays = $('input[name="time[]"]');
           var values = $('input[name="value[]"]');
-          var acTime = 10;
+          var acTime = 0; var first;
           $.each(delays, function(i, elem) {
-            if (typeof elem == 'function' || elem.value == '') return; // workaround
+            if (typeof elem == 'function' || elem.value == ''){  // workaround
+              return;
+            }
             var [val, time] = [values[i].value, elem.value];
+            val = Number(val); time = Number(time);
             arrDelays.push(time);
             arrValues.push(val);
+            if (i==0) {
+              out1.setValue(val? onValue : offValue);
+              first = [val,time];
+              acTime += time;
+              return;
+            }
             slices.push([function(val){
-              out1.setValue(Number(val)? onValue : offValue);
+              out1.setValue(val? onValue : offValue);
             }, acTime, val]);
-            acTime += Number(time);
+            acTime += time;
           });
+          slices.push([function(val){
+            out1.setValue(val? onValue : offValue);
+          }, acTime, first[0]]);
 
           if (timerId != null) {
             window.clearInterval(timerId);
@@ -817,7 +829,10 @@
             slices.map(function(slice) { window.setTimeout(...slice); });
           }, acTime, slices);
 
-          //$dlg.remove();
+          device.deviceDef.values = arrValues;
+          device.deviceDef.timeslices = arrDelays;
+
+        $dlg.remove();
 
       });
 
@@ -836,7 +851,7 @@
       var sliceTemplate = `
       <div>
         sinal(0,1): <input type="text" style="width:30px;" name="value[]" />
-        tempo(ms)[min 100]: <input type="text" style="width:30px" name="time[]" />
+        tempo(ms)[min 100]: <input type="text" style="width:34px" name="time[]" />
       </div>`;
       var savedData = '';
       if (arrValues.length > 0) {
@@ -844,7 +859,7 @@
           savedData += `
           <div>
             sinal(0,1): <input type="text" style="width:30px;" name="value[]" value="${value}" />
-            tempo(ms)[min 100]: <input type="text" style="width:30px" name="time[]" value="${arrDelays[i]}" />
+            tempo(ms)[min 100]: <input type="text" style="width:34px" name="time[]" value="${arrDelays[i]}" />
           </div>`;
         });
       }
@@ -858,9 +873,9 @@
     };
 
     device.$ui.on('deviceAdd', function(event) {
-      osc_dblClickHandler(event);
+      //osc_dblClickHandler(event);
+      device.$ui.on('dblclick', osc_dblClickHandler);
     });
-    device.$ui.on('dblclick', osc_dblClickHandler);
     device.$ui.on('deviceRemove', function() {
       if (timerId != null) {
         window.clearInterval(timerId);
@@ -887,8 +902,8 @@
   $s.registerDevice('4bit7seg', createLED4bitFactory() );
 
   // register Rotary Encoder
-  $s.registerDevice('RotaryEncoder', createRotaryEncoderFactory() );
-
+  //$s.registerDevice('RotaryEncoder', createRotaryEncoderFactory() );
+/*
   $s.registerDevice('BusIn', function(device) {
     var numOutputs = Math.max(2, device.deviceDef.numOutputs || 8);
     device.halfPitch = true;
@@ -951,5 +966,5 @@
       };
     };
   });
-
+*/
 }(simcir);

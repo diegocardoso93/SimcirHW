@@ -1,5 +1,5 @@
 
-var DataStructures = (function () {
+var DataJSLua = (function () {
 	
 	/**
 	 * Main lua conversion logic
