@@ -5,7 +5,7 @@ require "../circuitlib"
 SCH = SimcirHW:new()
 
 SCH.ws:bind("receive", {msg=
-[===[
+[[
 {
   type="circuit",
   circuit=
@@ -28,7 +28,7 @@ SCH.ws:bind("receive", {msg=
     ,cycles=1 -- 0 => infinity
   }
 }
-]===], opcode=1})
+]], opcode=1})
 
 -- test if message loaded in table
 assert(SCH.message.type == "circuit")

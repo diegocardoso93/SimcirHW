@@ -60,12 +60,12 @@ template is:
 function Logger:format_message_to_send()
   
   self.message = 
-  [===[
+  [[
   {
     type="datalog",
     data=_DATA
   }
-  ]===]
+  ]]
   
   local _DATA = '{'
   for k, data in pairs(SCH.logger.data) do

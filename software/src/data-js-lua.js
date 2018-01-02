@@ -77,6 +77,7 @@ var DataJSLua = (function () {
 	
 	return {
         jsObjToTableStr: convert,
-        tableStrToJsObj: tableStrToJsObj
+        tableStrToJsObj: tableStrToJsStr
     };
 })();
+
