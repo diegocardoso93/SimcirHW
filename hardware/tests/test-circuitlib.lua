@@ -20,5 +20,3 @@ A = 0; B = 1
 assert((A -bitor- B) -bitand- bitnot((B -bitxor- bitnot(A))) == 1)
 
 print("-- end of tests --")
-
-  

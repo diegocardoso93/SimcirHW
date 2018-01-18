@@ -1,5 +1,5 @@
 
-require "circuitlib"
+require "../circuitlib"
 require "nodemcu_fakelibs" -- gpio, tmr fake libs (disable in real hw)
 
 local Logger = require "logger"
@@ -37,7 +37,7 @@ function SimcirHW:configure_inputs()
   for k, inp in pairs(self.circuit.inputs) do
     -- virtual input
     if type(inp) == "table" then
-      local acc_time = 0
+      local acc_time = 1
       for i, time in ipairs(inp.timeslices) do
         local t_tmr = tmr.create()
         t_tmr:register(acc_time, tmr.ALARM_SINGLE, 

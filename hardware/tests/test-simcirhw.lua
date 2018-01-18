@@ -1,6 +1,7 @@
 
 local SimcirHW = require '../simcirhw'
 require "../circuitlib"
+require "../nodemcu_fakelibs"
 
 SCH = SimcirHW:new()
 
@@ -25,7 +26,8 @@ SCH.ws:bind("receive", {msg=
       Out2="D1"
     }
     ,hardware="esp8266"
-    ,cycles=1 -- 0 => infinity
+    ,cycles=1 -- 0: infinity
+    ,origin=0 -- 0: hw, 1: sw
   }
 }
 ]], opcode=1})
@@ -52,3 +54,8 @@ SCH.logger:format_message_to_send()
 assert(#loadstring('return ' .. SCH.logger.message)()['data'] == 6)
 
 print("-- end of tests --")
+
+
+-- test sjson
+assert(sjson.decode('{"hello":123}')['hello'], 123)
+assert(sjson.encode({hello=123}), '{"hello":123}')
