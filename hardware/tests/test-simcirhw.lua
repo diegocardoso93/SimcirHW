@@ -5,32 +5,37 @@ require "../nodemcu_fakelibs"
 
 SCH = SimcirHW:new()
 
+-- pin_map: mapped to external pins
 SCH.ws:bind("receive", {msg=
 [[
 {
-  type="circuit",
-  circuit=
+  "type":"circuit",
+  "circuit":
   {
-    outputs={
-      Out1="(In1 AND NOT(In3)) OR (In2 AND In3)",
-      Out2="In1 XOR In2"
+    "outputs":{
+      "Out1":"(In1 AND NOT(In3)) OR (In2 AND In3)",
+      "Out2":"In1 XOR In2"
     }
-    ,inputs={
-      In1=1,
-      In2=0,
-      In3={values={0,1,0,1},timeslices={100,200,100,600}},
+    ,"inputs":{
+      "In1":1,
+      "In2":0,
+      "In3":{"values":[0,1,0,1],"timeslices":[100,200,100,600]}
     }
-    -- mapped to external pins
-    ,pin_map={
-      Out1="D0",
-      Out2="D1"
+    ,"pin_map":{
+      "Out1":"D0",
+      "Out2":"D1"
     }
-    ,hardware="esp8266"
-    ,cycles=1 -- 0: infinity
-    ,origin=0 -- 0: hw, 1: sw
+    ,"hardware":"esp8266"
+    ,"cycles":1
+    ,"origin":0
   }
 }
 ]], opcode=1})
+
+
+-- test sjson
+assert(sjson.decode('{"hello":123}')['hello'], 123)
+assert(sjson.encode({hello=123}), '{"hello":123}')
 
 -- test if message loaded in table
 assert(SCH.message.type == "circuit")
@@ -51,11 +56,7 @@ assert(SCH.state.outputs["Out2"] == In1 -bitxor- In2)
 print(SCH.logger:dump())
 
 SCH.logger:format_message_to_send()
-assert(#loadstring('return ' .. SCH.logger.message)()['data'] == 6)
+assert(#sjson.decode(SCH.logger.message)['data'] == 6)
 
 print("-- end of tests --")
 
-
--- test sjson
-assert(sjson.decode('{"hello":123}')['hello'], 123)
-assert(sjson.encode({hello=123}), '{"hello":123}')

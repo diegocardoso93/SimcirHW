@@ -9,7 +9,7 @@ local SimcirHW = {}
 local HwInterface = {}
 
 function SimcirHW:eval_message(str_msg)
-  self.message = loadstring("return " .. self.str_msg)()
+  self.message = sjson.decode(str_msg)
 end
 
 function SimcirHW:prepare_circuit(circuit)
@@ -116,7 +116,7 @@ end
 
 function SimcirHW:handle_ws_message(str_msg)
   print("msg received: " .. str_msg)
-  self.message = loadstring("return " .. str_msg)()
+  SimcirHW:eval_message(str_msg);
   
   if self.message.type == "circuit" then
     self:prepare_circuit(self.message.circuit)

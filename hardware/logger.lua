@@ -58,33 +58,11 @@ template is:
 }
 ]]
 function Logger:format_message_to_send()
-  
-  self.message = 
-  [[
-  {
+  self.message = {
     type="datalog",
-    data=_DATA
+    data=SCH.logger.data
   }
-  ]]
-  
-  local _DATA = '{'
-  for k, data in pairs(SCH.logger.data) do
-    local _inputs = '{inputs={'
-    for inp_id, inp_val in pairs(data.inputs) do
-      _inputs = _inputs .. inp_id .. '=' .. inp_val .. ','
-    end
-    _inputs = _inputs:sub(1,-2) .. '},'
-    local _outputs = 'outputs={'
-    for out_id, out_val in pairs(data.outputs) do
-      _outputs = _outputs .. out_id .. '=' .. out_val .. ','
-    end
-    _outputs = _outputs:sub(1,-2) .. '},'
-    local _localtime = 'localtime=' .. data.localtime .. '},'
-    _DATA = _DATA .. _inputs .. _outputs .. _localtime
-  end
-  _DATA = _DATA:sub(1,-2) .. '}'
-  
-  self.message = self.message:gsub("_DATA", _DATA)
+  self.message = sjson.encode(self.message)
 end
 
 function logger:new()
