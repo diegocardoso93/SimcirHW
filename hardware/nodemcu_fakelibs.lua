@@ -19,13 +19,14 @@ gpio = {
   pins_type = {},
   
   -- constants
-  INPUT = 1,
+  INPUT = 0,
   OUTPUT = 1,
   HIGH = 1,
   LOW = 0
 }
 
 function gpio.mode(pin, mode)
+  print(pin, "aaaa")
   gpio.pins_type[pin] = mode
 end
 
