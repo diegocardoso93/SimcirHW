@@ -7,6 +7,15 @@
     <title>SimcirHW</title>
   </head>
   <body>
+		<h2>Mapeamento de pinos</h2>
+		<p>
+			<select id="boardSelector">
+				<option>selecione uma placa</option>
+				<option value="NodeMCU_V2">NodeMCU ESP-12 WiFi ESP8266</option>
+				<option value="Wemos_D1">WeMos D1 R1 Wifi ESP8266</option>
+			</select>
+		</p>
+		<div id="boardArea"></div>
     <div id="mySimcir"></div>
     <div>
       <button id="getDataBtn">v get data v</button>
@@ -19,7 +28,6 @@
 	<script type="text/javascript" src="jquery-3.2.1.min.js"></script>
   <script type="text/javascript" src="lang/ptbr.js"></script>
   <script type="text/javascript" src="circuit-parser.js"></script>
-  <script type="text/javascript" src="data-js-lua.js"></script>
 	<script type="text/javascript" src="simcir.js"></script>
   <script type="text/javascript" src="simcir-basicset.js"></script>
   <script type="text/javascript" src="misc/simcir-dso.js"></script>
@@ -53,7 +61,71 @@ $(function() {
   // load default (just specifies circuit size).
   setCircuitData('{ "width":600, "height":400 }');
 });
-  </script>
+	</script>
+	  <script>
+				$(document).ready(function(){
+				$('#boardSelector').change(function() {
+					switch ($(this).val()){
+						case 'NodeMCU_V2':
+							var HTMLboard = "";
+							var inputs = ["In0","In1","Out0","Out1","Out2"];
+							var HTMLoptions = '<option></option>';
+							inputs.forEach((v, k) => {
+								HTMLoptions += '<option>' + v + '</option>';
+							});
+							HTMLboard += `
+								<div style="float:left;width:80px;text-align:right;margin-right:10px;">
+									<select name="boardPin[SD2]" style="margin-top:103px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[SD3]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+								</div>
+							 `;
+							HTMLboard += `<img src="img/NodeMCU_V2.png" style="float:left;height:400px;"/>`;
+							HTMLboard += `
+								<div style="float:left;width:80px;margin-left:10px;">
+									<select name="boardPin[D0]" style="margin-top:42px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[D1]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[D2]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[D3]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[D4]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[D5]" style="margin-top:41px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[D6]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[D7]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[D8]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[RX]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[TX]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+								</div>
+							 `;
+						break;
+						case 'Wemos_D1':
+						var HTMLboard = "";
+							var inputs = ["In0","In1","Out0","Out1","Out2"];
+							var HTMLoptions = '<option></option>';
+							inputs.forEach((v, k) => {
+								HTMLoptions += '<option>' + v + '</option>';
+							});
+							HTMLboard += `<img src="img/Wemos_D1.png" style="float:left;height:458px;margin-left:100px"/>`;
+							HTMLboard +=
+							`<div style="float:left;width:80px;margin-left:10px;">
+									<select name="boardPin[D0]" style="margin-top:184px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[D1]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[D2]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[D3]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[D4]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[D4]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[D5]" style="margin-top:42px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[D6]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+									<select name="boardPin[D7]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+								</div>
+							 `;
+						break;
+						default:
+							var HTMLboard = "";
+						break;
+					}
+					$("#boardArea").html(HTMLboard);
+				});
+				});
+			</script>
 	<script>if (window.module) module = window.module;</script>
   </body>
 </html>
