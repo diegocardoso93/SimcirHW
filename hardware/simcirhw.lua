@@ -1,6 +1,6 @@
 
-require "../circuitlib"
-require "nodemcu_fakelibs" -- gpio, tmr fake libs (disable in real hw)
+require "circuitlib"
+--require "nodemcu_fakelibs" -- gpio, tmr fake libs (disable in real hw)
 
 local Logger = require "logger"
 
@@ -9,7 +9,10 @@ local SimcirHW = {}
 local HwInterface = {}
 
 function SimcirHW:eval_message(str_msg)
-  self.message = sjson.decode(str_msg)
+  local message = sjson.decode(str_msg)
+  if message.type == "circuit" then
+    self.message = message
+  end
 end
 
 function SimcirHW:prepare_circuit(circuit)
@@ -20,6 +23,7 @@ function SimcirHW:prepare_circuit(circuit)
   end
   
   HwInterface = require(self.circuit.hardware)
+  HwInterface.set_board(self.circuit.board)
 end
 
 function SimcirHW:configure_hw_gpios()
@@ -87,7 +91,7 @@ function SimcirHW:propagate()
 end
 
 function SimcirHW:start()
-  
+  print("call start")
   self:configure_hw_gpios()
   self:configure_inputs()
   self:execute()
@@ -100,9 +104,9 @@ function SimcirHW:execute()
     for _, t in ipairs(self.timer_slices) do
       t:start()
     end
-    self.logger:format_message_to_send()
-    self.ws:send(self.logger.message)
+    
   end
+  --self.logger:clean()
 end
 
 function SimcirHW:stop()
@@ -112,15 +116,6 @@ function SimcirHW:destroy()
   self.ws = nil
   self = nil
   collectgarbage()
-end
-
-function SimcirHW:handle_ws_message(str_msg)
-  print("msg received: " .. str_msg)
-  SimcirHW:eval_message(str_msg);
-  
-  if self.message.type == "circuit" then
-    self:prepare_circuit(self.message.circuit)
-  end
 end
 
 function SimcirHW:register_log()
@@ -146,21 +141,8 @@ function simcirhw:new()
   self.expressions = {}
   self.timer_slices = {}
   
-  
-  local ws = websocket.createClient()
-  ws:on("connection", function() 
-    print("got ws connection")
-  end)
-  ws:on("receive", function(_, msg, code)
-    self:handle_ws_message(msg)
-  end)
-  ws:on("close", function(_)
-     print("ws connection closed")
-  end)
-  ws:connect("ws://192.168.1.100:9061")
-  self.ws = ws
-  
   self.logger = Logger:new()
+  self.ws = {}
   
   return self
 end

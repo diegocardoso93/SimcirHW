@@ -12,14 +12,9 @@ function Logger:push_state(data)
   for inpk, inpv in pairs(data.inputs) do
     _t.inputs[inpk] = inpv
   end
-  if (#self.data > 0) then
-    _t.localtime = tmr.now() - self.data[#self.data].localtime
-  else
-    _t.localtime = tmr.now() -- microseconds
-  end
+  _t.localtime = tmr.now() -- microseconds
   
   self.data[#self.data+1] = _t
-  _t = nil
 end
 
 -- free memmory after cycle
@@ -60,7 +55,7 @@ template is:
 function Logger:format_message_to_send()
   self.message = {
     type="datalog",
-    data=SCH.logger.data
+    data=self.data
   }
   self.message = sjson.encode(self.message)
 end

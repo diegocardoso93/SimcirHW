@@ -1,5 +1,5 @@
 
-local SimcirHW = require '../simcirhw'
+local SimcirHW = require "../simcirhw"
 require "../circuitlib"
 require "../nodemcu_fakelibs"
 
@@ -26,8 +26,8 @@ SCH.ws:bind("receive", {msg=
       "Out2":"D1"
     }
     ,"hardware":"esp8266"
+    ,"board":"NodeMCU_V2"
     ,"cycles":1
-    ,"origin":0
   }
 }
 ]], opcode=1})

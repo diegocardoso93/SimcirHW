@@ -52,4 +52,4 @@ wifi.eventmon.register(wifi.eventmon.AP_STADISCONNECTED, function(T)
     print("\n\tAP: Station disconnected. \n\tMAC: " .. T.MAC .. "\n\tAID: " .. T.AID)
 end)
 
-dofile("main.lua")
+-- dofile("main.lua")

@@ -13,7 +13,9 @@ gpio = {
     [4]=0,
     [5]=0,
     [6]=0,
-    [7]=0
+    [7]=0,
+    [8]=0,
+    [12]=0
   },
   
   pins_type = {},
@@ -26,7 +28,6 @@ gpio = {
 }
 
 function gpio.mode(pin, mode)
-  print(pin, "aaaa")
   gpio.pins_type[pin] = mode
 end
 
