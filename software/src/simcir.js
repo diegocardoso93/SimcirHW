@@ -1902,6 +1902,7 @@ simcir.$ = function() {
       };
     };
 
+    var messageToSend = {};
     var getValidation = function() {
       var message = '';
       var ckt_valid = 0;
@@ -1923,15 +1924,16 @@ simcir.$ = function() {
       var connectors = [];
       var arrOutputs = [];
       var arrInputs = [];
+      var objOriginId = null;
       var clone = function(obj) {
         return JSON.parse(JSON.stringify(obj));
       };
-      var checkIfNextIsOut = function (inConn, objToId) {
+      var checkIfNextIsOutOrigin = function (inConn, objToId) {
         var outObj = null;
         inConn.forEach(function (t) {
           if (t.to.split('.')[0] == objToId.to.split('.')[0] && t != objToId) {
             devices.forEach(function (x) {
-              if (x.id == t.from.split('.')[0]) {
+              if (x.id == t.from.split('.')[0] && x.id != objOriginId) {
                 if (x.type == 'Out') {
                   outObj = x;
                 }
@@ -1939,13 +1941,13 @@ simcir.$ = function() {
             });
           }
         });
-        return outObj;
+        return null;
       };
       var getDevIdToByFrom = function (inConn, fromId) {
         var toId = [];
         inConn.forEach(function (t) {
           if (t.from.split('.')[0] == fromId) {
-            var outObj = checkIfNextIsOut(inConn, t);
+            var outObj = checkIfNextIsOutOrigin(inConn, t);
             if (!outObj) {
               toId.push(t.to.split('.')[0]);
             }
@@ -1967,7 +1969,9 @@ simcir.$ = function() {
         var ids = getDevIdToByFrom(connectors, id);
         ids.forEach(function (id) {
           var device = getDeviceTypeById(devices, id);
-          arrRet.push(device);
+          if (device != "GND" && device != "OSC" && device != "DC") {
+            arrRet.push(device);
+          }
           forTheEnd(id, connectors, devices, arrRet);
         });
       };
@@ -2019,14 +2023,17 @@ simcir.$ = function() {
         return st.pop();
       };
 
+      var sendOutputs = [];
       if (arrOutputs.length > 0) {
         $.each(arrOutputs, function (i, devOut) {
           var root = devOut.label;
           var arrRet = [];
+          objOriginId = devOut.id;
           forTheEnd(devOut.id, connectors, devices, arrRet);
           var str_rpn = arrRet.reverse().join(' ');
           str_rpn = rpnToInfix(str_rpn);
           var parse_result = CircuitParser.parse(str_rpn);
+          sendOutputs[devOut.label] = str_rpn;
           if (!(typeof(parse_result) === 'object')) {
             ckt_valid = 1;
             message = LANG["SUC_VALID_CIRCUIT"];
@@ -2058,8 +2065,21 @@ simcir.$ = function() {
             }
           });
         });
-        console.log(inputs)
-        console.log(DataJSLua.jsObjToTableStr(inputs))
+        
+        var sendInputs = [];
+        $.each(inputs, function(key, val) {
+          sendInputs.push(val);
+        });
+
+        messageToSend = {
+          'type': 'circuit',
+          'circuit': {
+            'outputs': sendOutputs,
+            'inputs': sendInputs
+          }
+        }
+        
+        console.log(messageToSend, 'xyz');
       } else {
         message = LANG["ERR_OUT_FAULT"];
       }
@@ -2695,6 +2715,34 @@ simcir.$ = function() {
           });
       };
     };
+  };
+
+  var formatMessageToSend = function() {
+/*
+{
+  "type":"circuit",
+  "circuit":
+  {
+    "outputs":{
+      "Out1":"(In1 AND NOT(In3)) OR (In2 AND In3)",
+      "Out2":"In1 XOR In2"
+    }
+    ,"inputs":{
+      "In1":1,
+      "In2":0,
+      "In3":{"values":[0,1,0,1],"timeslices":[100,200,100,600]}
+    }
+    ,"pin_map":{
+      "Out1":"D0",
+      "Out2":"D1"
+    }
+    ,"hardware":"esp8266"
+    ,"board":"NodeMCU_V2"
+    ,"cycles":1
+  }
+}
+*/
+
   };
 
   // register built-in devices

@@ -4,26 +4,39 @@
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
     <link rel="stylesheet" type="text/css" href="simcir.css" />
     <link rel="stylesheet" type="text/css" href="simcir-basicset.css" />
+		<link rel="stylesheet" href="jquery-ui.css">
     <title>SimcirHW</title>
   </head>
   <body>
-		<h2>Mapeamento de pinos</h2>
-		<p>
-			<select id="boardSelector">
-				<option>selecione uma placa</option>
-				<option value="NodeMCU_V2">NodeMCU ESP-12 WiFi ESP8266</option>
-				<option value="Wemos_D1">WeMos D1 R1 Wifi ESP8266</option>
-			</select>
-		</p>
-		<div id="boardArea"></div>
-    <div id="mySimcir"></div>
-    <div>
-      <button id="getDataBtn">v get data v</button>
-      <button id="setDataBtn">^ set data ^</button>
-      <button id="validateBtn">validate</button>
-      <button id="sendBtn">send ckt</button>
-    </div>
-    <textarea id="dataArea" style="width:600px; height:200px;"></textarea>
+		<div id="tabs">
+			<ul>
+				<li><a href="#tabs-1">Circuito</a></li>
+				<li><a href="#tabs-2">Mapeamento de pinos</a></li>
+				<li><a href="#tabs-3">Monitor de execução</a></li>
+			</ul>
+			<div id="tabs-1">
+					<div id="mySimcir"></div>
+					<div>
+						<button id="getDataBtn">v get data v</button>
+						<button id="setDataBtn">^ set data ^</button>
+						<button id="validateBtn">validate</button>
+					</div>
+					<textarea id="dataArea" style="width:600px; height:200px;"></textarea>
+			</div>
+			<div id="tabs-2">
+				<select id="boardSelector">
+					<option>selecione uma placa</option>
+					<option value="NodeMCU_V2">NodeMCU ESP-12 WiFi ESP8266</option>
+					<option value="Wemos_D1">WeMos D1 R1 Wifi ESP8266</option>
+				</select>
+				<div id="boardArea" style="display:inline-block;margin-top:20px;"></div>
+				<button id="sendBtn">send ckt</button>
+			</div>
+			<div id="tabs-3">
+				</div>
+		</div>
+		
+    
   
 	<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
 	<script type="text/javascript" src="jquery-3.2.1.min.js"></script>
@@ -31,9 +44,12 @@
   <script type="text/javascript" src="circuit-parser.js"></script>
 	<script type="text/javascript" src="simcir.js"></script>
   <script type="text/javascript" src="simcir-basicset.js"></script>
-  <script type="text/javascript" src="misc/simcir-dso.js"></script>
+	<script type="text/javascript" src="misc/simcir-dso.js"></script>
+	<script type="text/javascript" src="jquery-ui.js"></script>
   <script type="text/javascript">
 $(function() {
+
+	$("#tabs").tabs();
 
   var $s = simcir;
 
@@ -78,19 +94,19 @@ $(function() {
 					});
 					HTMLboard += `
 						<div style="float:left;width:80px;text-align:right;margin-right:10px;">
-							<select name="boardPin[SD2]" style="margin-top:103px;width:80px">${HTMLoptions}</select>
+							<select name="boardPin[SD2]" style="margin-top:115px;width:80px">${HTMLoptions}</select>
 							<select name="boardPin[SD3]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
 						</div>
 						`;
-					HTMLboard += `<img src="img/NodeMCU_V2.png" style="float:left;height:400px;"/>`;
+					HTMLboard += `<img src="img/NodeMCU_V2.png" style="float:left;height:450px;"/>`;
 					HTMLboard += `
 						<div style="float:left;width:80px;margin-left:10px;">
-							<select name="boardPin[D0]" style="margin-top:42px;width:80px">${HTMLoptions}</select>
+							<select name="boardPin[D0]" style="margin-top:47px;width:80px">${HTMLoptions}</select>
 							<select name="boardPin[D1]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
 							<select name="boardPin[D2]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
 							<select name="boardPin[D3]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
 							<select name="boardPin[D4]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-							<select name="boardPin[D5]" style="margin-top:41px;width:80px">${HTMLoptions}</select>
+							<select name="boardPin[D5]" style="margin-top:48px;width:80px">${HTMLoptions}</select>
 							<select name="boardPin[D6]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
 							<select name="boardPin[D7]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
 							<select name="boardPin[D8]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
@@ -106,10 +122,10 @@ $(function() {
 					inputs.forEach((v, k) => {
 						HTMLoptions += '<option>' + v + '</option>';
 					});
-					HTMLboard += `<img src="img/Wemos_D1.png" style="float:left;height:458px;margin-left:100px"/>`;
+					HTMLboard += `<img src="img/Wemos_D1.png" style="float:left;height:500px;margin-left:100px"/>`;
 					HTMLboard +=
 					`<div style="float:left;width:80px;margin-left:10px;">
-							<select name="boardPin[D13]" style="margin-top:184px;width:80px">${HTMLoptions}</select>
+							<select name="boardPin[D13]" style="margin-top:200px;width:80px">${HTMLoptions}</select>
 							<select name="boardPin[D12]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
 							<select name="boardPin[D11]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
 							<select name="boardPin[D10]" style="margin-top:2px;width:80px">${HTMLoptions}</select>
