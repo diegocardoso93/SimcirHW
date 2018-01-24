@@ -1941,7 +1941,7 @@ simcir.$ = function() {
             });
           }
         });
-        return null;
+        return outObj;
       };
       var getDevIdToByFrom = function (inConn, fromId) {
         var toId = [];
@@ -2078,7 +2078,7 @@ simcir.$ = function() {
             'inputs': sendInputs
           }
         }
-        
+
         console.log(messageToSend, 'xyz');
       } else {
         message = LANG["ERR_OUT_FAULT"];
