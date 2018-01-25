@@ -1902,11 +1902,11 @@ simcir.$ = function() {
       };
     };
 
-    var messageToSend = {};
     var getValidation = function() {
       var message = '';
       var ckt_valid = 0;
       var devIdCount = 0;
+      var messageToSend = {};
       $devicePane.children('.simcir-device').each(function() {
         var $dev = $(this);
         var device = controller($dev);
@@ -1933,7 +1933,7 @@ simcir.$ = function() {
         inConn.forEach(function (t) {
           if (t.to.split('.')[0] == objToId.to.split('.')[0] && t != objToId) {
             devices.forEach(function (x) {
-              if (x.id == t.from.split('.')[0] && x.id != objOriginId) {
+              if (x.id == t.from.split('.')[0] && x.id == objOriginId) {
                 if (x.type == 'Out') {
                   outObj = x;
                 }
@@ -2023,7 +2023,7 @@ simcir.$ = function() {
         return st.pop();
       };
 
-      var sendOutputs = [];
+      var sendOutputs = {};
       if (arrOutputs.length > 0) {
         $.each(arrOutputs, function (i, devOut) {
           var root = devOut.label;
@@ -2041,34 +2041,22 @@ simcir.$ = function() {
             message = LANG["ERR_INVALID_CIRCUIT"];
           }
         });
-        var inputs = [];
+        var sendInputs = {};
         $.each(arrInputs, function(i, devIn) {
           var to = getDevIdToByFrom(connectors, devIn.id);
           devices.forEach(function (x) {
             if (x.id == to) {
               if (x.type == 'DC') {
-                var _t = {};
-                _t[devIn['label']] = 1;
-                inputs.push(_t);
+                sendInputs[devIn['label']] = 1;
               } else if (x.type == 'GND') {
-                var _t = {};
-                _t[devIn['label']] = 0;
-                inputs.push(_t);
+                sendInputs[devIn['label']] = 0;
               } else if (x.type == 'OSC') {
-                var _t = {};
-                _t[devIn['label']] = {};
-                _t[devIn['label']]['timeslices'] = x.timeslices;
-                _t[devIn['label']]['values'] = x.values;
-
-                inputs.push(_t);
+                sendInputs[devIn['label']] = {};
+                sendInputs[devIn['label']]['timeslices'] = x.timeslices;
+                sendInputs[devIn['label']]['values'] = x.values;
               }
             }
           });
-        });
-        
-        var sendInputs = [];
-        $.each(inputs, function(key, val) {
-          sendInputs.push(val);
         });
 
         messageToSend = {
@@ -2086,7 +2074,8 @@ simcir.$ = function() {
 
       return {
         valid: ckt_valid,
-        message: message
+        message: message,
+        messageToSend: messageToSend
       };
     }
 
@@ -2350,10 +2339,15 @@ simcir.$ = function() {
       }
     };
 
+    var getCircuitMessage = function() {
+      return getValidation();
+    };
+
     controller($workspace, {
       data: getData,
       text: getText,
-      validate: validateCircuit
+      validate: validateCircuit,
+      getCircuitMessage: getCircuitMessage
     });
 
     return $workspace;
@@ -2500,7 +2494,8 @@ simcir.$ = function() {
     enableEvents: enableEvents,
     graphics: graphics,
     controller: controller,
-    unit: unit
+    unit: unit,
+    messageToSend: {"dasd":"asdsa"}
   });
 }(simcir);
 
