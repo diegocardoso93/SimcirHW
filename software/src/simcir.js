@@ -2494,8 +2494,7 @@ simcir.$ = function() {
     enableEvents: enableEvents,
     graphics: graphics,
     controller: controller,
-    unit: unit,
-    messageToSend: {"dasd":"asdsa"}
+    unit: unit
   });
 }(simcir);
 
