@@ -4,52 +4,54 @@
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
     <link rel="stylesheet" type="text/css" href="simcir.css" />
     <link rel="stylesheet" type="text/css" href="simcir-basicset.css" />
-	<link rel="stylesheet" href="jquery-ui.css">
-	<title>SimcirHW</title>
+  <link rel="stylesheet" href="jquery-ui.css">
+  <title>SimcirHW</title>
   </head>
   <body>
-	<div id="tabs">
-		<ul>
-			<li><a href="#tabs-1">Circuito</a></li>
-			<li><a href="#tabs-2">Mapeamento de pinos</a></li>
-			<li id="link_tab_monitor"><a href="#tabs-3">Monitor de execução</a></li>
-		</ul>
-		<div id="tabs-1">
-				<div id="mySimcir"></div>
-				<div>
-					<button id="getDataBtn">v get data v</button>
-					<button id="setDataBtn">^ set data ^</button>
-					<button id="validateBtn">validate</button>
-				</div>
-				<textarea id="dataArea" style="width:600px; height:200px;"></textarea>
-		</div>
-		<div id="tabs-2">
-			<select id="boardSelector">
-				<option>selecione uma placa</option>
-				<option value="NodeMCU_V2">NodeMCU ESP-12 WiFi ESP8266</option>
-				<option value="Wemos_D1">WeMos D1 R1 Wifi ESP8266</option>
-			</select>
-			<div id="boardArea" style="display:inline-block;margin-top:20px;"></div>
-			<button id="sendBtn">send ckt</button>
-		</div>
-		<div id="tabs-3">
-				<button id="startRealtimeMonitor">start</button>
-				<button id="stopRealtimeMonitor">stop</button>
-				<div id="chartdiv"></div>
-				<div id="chartdiv2"></div>
-		</div>
-	</div>
-		
+  <div id="tabs">
+    <ul>
+      <li><a href="#tabs-1">Circuito</a></li>
+      <li><a href="#tabs-2">Mapeamento de pinos</a></li>
+      <li id="link_tab_monitor"><a href="#tabs-3">Monitor de execução</a></li>
+    </ul>
+    <div id="tabs-1">
+        <div id="mySimcir"></div>
+        <div>
+          <button id="getDataBtn">v get data v</button>
+          <button id="setDataBtn">^ set data ^</button>
+          <button id="validateBtn">validate</button>
+        </div>
+        <textarea id="dataArea" style="width:600px; height:200px;"></textarea>
+    </div>
+    <div id="tabs-2">
+      <select id="boardSelector">
+        <option>selecione uma placa</option>
+        <option value="NodeMCU_V2">NodeMCU ESP-12 WiFi ESP8266</option>
+        <option value="Wemos_D1">WeMos D1 R1 Wifi ESP8266</option>
+      </select>
+      <div id="boardArea" style="display:inline-block;margin-top:20px;"></div>
+      <button id="sendBtn">send ckt</button>
+    </div>
+    <div id="tabs-3">
+      <button id="startRealtimeMonitor">start</button>
+      <button id="stopRealtimeMonitor">stop</button>
+      <div id="chartsContainer"></div>
+    </div>
+  </div>
     
-	<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
-	<script type="text/javascript" src="jquery-3.2.1.min.js"></script>
-	<script type="text/javascript" src="lang/ptbr.js"></script>
-	<script type="text/javascript" src="circuit-parser.js"></script>
-	<script type="text/javascript" src="simcir.js"></script>
-	<script type="text/javascript" src="simcir-basicset.js"></script>
-	<script type="text/javascript" src="misc/simcir-dso.js"></script>
-	<script type="text/javascript" src="jquery-ui.js"></script>
+    
+  <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+  <script type="text/javascript" src="jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="lang/ptbr.js"></script>
+  <script type="text/javascript" src="circuit-parser.js"></script>
+  <script type="text/javascript" src="simcir.js"></script>
+  <script type="text/javascript" src="simcir-basicset.js"></script>
+  <script type="text/javascript" src="misc/simcir-dso.js"></script>
+  <script type="text/javascript" src="jquery-ui.js"></script>
   <script type="text/javascript">
+
+var circuitMessage = {};
+var gpios = {};
 $(function() {
 
   $("#tabs").tabs();
@@ -76,429 +78,379 @@ $(function() {
   $('#validateBtn').click(function() {
     $s.controller(
       $simcir.find('.simcir-workspace') ).validate();
-	});
-	$('#sendBtn').click(function() {
+  });
+  $('#sendBtn').click(function() {
     sendCircuit();
   });
 
   // load default (just specifies circuit size).
-	setCircuitData('{ "width":600, "height":400 }');
-	
-	var circuitMessage = {};
-	var gpios = {};
-	$('#boardSelector').change(function() {
-		var HTMLboard = "";
-		circuitMessage = $s.controller($simcir.find('.simcir-workspace')).getCircuitMessage();
-		gpios = $.extend({},circuitMessage.messageToSend.circuit.inputs, circuitMessage.messageToSend.circuit.outputs);
-		var HTMLoptions = '<option></option>';
-		$.each(gpios, function(k, v) {
-			HTMLoptions += '<option>' + k + '</option>';
-		});
-		switch ($(this).val()){
-			case 'NodeMCU_V2':
-				HTMLboard += `
-					<input type="hidden" name="board" value="NodeMCU_V2" />
-					<input type="hidden" name="hardware" value="esp8266" />
-					<div style="float:left;width:80px;text-align:right;margin-right:10px;">
-						<select selectType="boardPin" name="SD3" style="margin-top:138px;width:80px">${HTMLoptions}</select>
-					</div>
-					`;
-				HTMLboard += `<img src="img/NodeMCU_V2.png" style="float:left;height:450px;"/>`;
-				HTMLboard += `
-					<div style="float:left;width:80px;margin-left:10px;">
-						<select selectType="boardPin" name="D0" style="margin-top:47px;width:80px">${HTMLoptions}</select>
-						<select selectType="boardPin" name="D1" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-						<select selectType="boardPin" name="D2" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-						<select selectType="boardPin" name="D3" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-						<select selectType="boardPin" name="D4" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-						<select selectType="boardPin" name="D5" style="margin-top:48px;width:80px">${HTMLoptions}</select>
-						<select selectType="boardPin" name="D6" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-						<select selectType="boardPin" name="D7" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-						<select selectType="boardPin" name="D8" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-					</div>
-					`;
-			break;
-			case 'Wemos_D1':
-				HTMLboard += `<img src="img/Wemos_D1.png" style="float:left;height:500px;margin-left:100px"/>`;
-				HTMLboard +=`
-					<input type="hidden" name="board" value="Wemos_D1" />
-					<input type="hidden" name="hardware" value="esp8266" />
-					<div style="float:left;width:80px;margin-left:10px;">
-						<select selectType="boardPin" name="D13" style="margin-top:200px;width:80px">${HTMLoptions}</select>
-						<select selectType="boardPin" name="D12" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-						<select selectType="boardPin" name="D11" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-						<select selectType="boardPin" name="D10" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-						<select selectType="boardPin" name="D9" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-						<select selectType="boardPin" name="D8" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-						<select selectType="boardPin" name="D4" style="margin-top:42px;width:80px">${HTMLoptions}</select>
-						<select selectType="boardPin" name="D3" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-						<select selectType="boardPin" name="D2" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-					</div>
-					`;
-			break;
-			default:
-				var HTMLboard = "";
-			break;
-		}
-		$("#boardArea").html(HTMLboard);
-	});
+  setCircuitData('{ "width":600, "height":400 }');
 
-	var host = window.document.location.host.replace(/:.*/, '');
-	var ws = new WebSocket('ws://' + host + ':9061');
-	ws.onmessage = function (event) {
-		console.log(event.data);
-	};
-	ws.onopen = function() {
-		console.log('open ws connection');
-	};
+  $('#boardSelector').change(function() {
+    var HTMLboard = "";
+    circuitMessage = $s.controller($simcir.find('.simcir-workspace')).getCircuitMessage();
+    gpios = $.extend({},circuitMessage.messageToSend.circuit.inputs, circuitMessage.messageToSend.circuit.outputs);
+    var HTMLoptions = '<option></option>';
+    $.each(gpios, function(k, v) {
+      HTMLoptions += '<option>' + k + '</option>';
+    });
+    switch ($(this).val()){
+      case 'NodeMCU_V2':
+        HTMLboard += `
+          <input type="hidden" name="board" value="NodeMCU_V2" />
+          <input type="hidden" name="hardware" value="esp8266" />
+          <div style="float:left;width:80px;text-align:right;margin-right:10px;">
+            <select selectType="boardPin" name="SD3" style="margin-top:138px;width:80px">${HTMLoptions}</select>
+          </div>
+          `;
+        HTMLboard += `<img src="img/NodeMCU_V2.png" style="float:left;height:450px;"/>`;
+        HTMLboard += `
+          <div style="float:left;width:80px;margin-left:10px;">
+            <select selectType="boardPin" name="D0" style="margin-top:47px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D1" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D2" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D3" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D4" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D5" style="margin-top:48px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D6" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D7" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D8" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+          </div>
+          `;
+      break;
+      case 'Wemos_D1':
+        HTMLboard += `<img src="img/Wemos_D1.png" style="float:left;height:500px;margin-left:100px"/>`;
+        HTMLboard +=`
+          <input type="hidden" name="board" value="Wemos_D1" />
+          <input type="hidden" name="hardware" value="esp8266" />
+          <div style="float:left;width:80px;margin-left:10px;">
+            <select selectType="boardPin" name="D13" style="margin-top:200px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D12" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D11" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D10" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D9" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D8" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D4" style="margin-top:42px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D3" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D2" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+          </div>
+          `;
+      break;
+      default:
+        var HTMLboard = "";
+      break;
+    }
+    $("#boardArea").html(HTMLboard);
+  });
 
-	function sendCircuit() {
-		var arrOut = Object.keys(circuitMessage.messageToSend.circuit.outputs);
-		var qtdOut = arrOut.length;
-		var countOut = 0;
-		var pinMap = {};
-		$('select[selectType=boardPin]').each(function(i, el){
-			// @TODO: validar se todos outputs foram mapeados e se não repetiu
-			//if (arrOut.includes($(el).val())) {
-			//	countOut++;
-			//}
-			if ($(el).val() != "") {
-				pinMap[$(el).val()] = $(el).attr('name');
-			}
-		});
-		
-		circuitMessage.messageToSend.circuit["pin_map"] = pinMap;
-		circuitMessage.messageToSend.circuit["hardware"] = $("input[name=hardware]").val();
-		circuitMessage.messageToSend.circuit["board"] = $("input[name=board]").val();
-		circuitMessage.messageToSend.circuit["cycles"] = 1;
-		console.log(circuitMessage.messageToSend, JSON.stringify(circuitMessage.messageToSend));
-		
-		ws.send(JSON.stringify(circuitMessage.messageToSend));
+  var host = window.document.location.host.replace(/:.*/, '');
+  var ws = new WebSocket('ws://' + host + ':9061');
+  ws.onmessage = function (event) {
+    console.log(event.data);
+  };
+  ws.onopen = function() {
+    console.log('open ws connection');
+  };
 
-		/*
-		ws.send(`
-		{
-			"type":"circuit",
-			"circuit":
-			{
-				"outputs":{
-					"Out1":"(In1 AND NOT(In3)) OR (In2 AND In3)",
-					"Out2":"In1 XOR In2"
-				}
-				,"inputs":{
-					"In1":1,
-					"In2":0,
-					"In3":{"values":[0,1,0,1],"timeslices":[1000,2000,1000,6000]}
-				}
-				,"pin_map":{
-					"Out1":"D0",
-					"Out2":"D1"
-				}
-				,"hardware":"esp8266"
-				,"board":"NodeMCU_V2"
-				,"cycles":1
-			}
-		}`);*/
-	}
+  function sendCircuit() {
+    var arrOut = Object.keys(circuitMessage.messageToSend.circuit.outputs);
+    var qtdOut = arrOut.length;
+    var countOut = 0;
+    var pinMap = {};
+    $('select[selectType=boardPin]').each(function(i, el){
+      // @TODO: validar se todos outputs foram mapeados e se não repetiu
+      //if (arrOut.includes($(el).val())) {
+      //	countOut++;
+      //}
+      if ($(el).val() != "") {
+        pinMap[$(el).val()] = $(el).attr('name');
+      }
+    });
+    
+    circuitMessage.messageToSend.circuit["pin_map"] = pinMap;
+    circuitMessage.messageToSend.circuit["hardware"] = $("input[name=hardware]").val();
+    circuitMessage.messageToSend.circuit["board"] = $("input[name=board]").val();
+    circuitMessage.messageToSend.circuit["cycles"] = 1;
+    console.log(circuitMessage.messageToSend, JSON.stringify(circuitMessage.messageToSend));
+    
+    ws.send(JSON.stringify(circuitMessage.messageToSend));
+
+    /*
+    ws.send(`
+    {
+      "type":"circuit",
+      "circuit":
+      {
+        "outputs":{
+          "Out1":"(In1 AND NOT(In3)) OR (In2 AND In3)",
+          "Out2":"In1 XOR In2"
+        }
+        ,"inputs":{
+          "In1":1,
+          "In2":0,
+          "In3":{"values":[0,1,0,1],"timeslices":[1000,2000,1000,6000]}
+        }
+        ,"pin_map":{
+          "Out1":"D0",
+          "Out2":"D1"
+        }
+        ,"hardware":"esp8266"
+        ,"board":"NodeMCU_V2"
+        ,"cycles":1
+      }
+    }`);*/
+  }
 
 
 
-	
+  
 });
-		
-	</script>
-	
-	<script src="execution_monitor/monitor_script.js"></script>
+
+  </script>
+
+  <script src="execution_monitor/monitor_script.js"></script>
 
 <style>
-	#chartdiv,
-	#chartdiv2,
-	#chartdiv3 {
-		width: 100%;
-		height: 200px;
-	}															
-	</style>
-	
-	<script src="execution_monitor/amcharts.js"></script>
-	<script src="execution_monitor/serial.js"></script>
-	<script src="execution_monitor/light.js"></script>
-	
-	<script>
+  #chartsContainer, [id^=chart_] {
+    width: 100%;
+    height: 200px;
+  }
+  </style>
+
+  <script src="execution_monitor/amcharts.js"></script>
+  <script src="execution_monitor/serial.js"></script>
+  <script src="execution_monitor/light.js"></script>
+
+  <script>
 var updateMonitorControl;
 $('#startRealtimeMonitor').click(function() {
 
-	var chartData1 = generateChartData();
-	var chartData2 = generateChartData();
-	
-	var chartConfig = {
-			"type": "serial",
-			"theme": "light",
-			"dataProvider": chartData1,
-			"valueAxes": [{
-					"position": "left",
-					"title": "In1"
-			}],
-			"graphs": [{
-					"id": "g1",
-					"fillAlphas": 0.4,
-					"valueField": "value"
-			}],
-			"chartCursor": {
-					"categoryBalloonDateFormat": "NN:S.QQQ",
-					"cursorPosition": "mouse"
-			},
-			"categoryField": "date",
-			"categoryAxis": {
-					"minPeriod": "fff",
-					"parseDates": true,
-					"dateFormats": [{period:'fff',format:'S.QQQ'},
-	{period:'ss',format:'S.QQQ'},
-	{period:'mm',format:'NN:SS'},
-	{period:'hh',format:'NN:SS'},
-	{period:'DD',format:'SS:QQQ'},
-	{period:'WW',format:'SS:QQQ'},
-	{period:'MM',format:'SS:QQQ'},
-	{period:'YYYY',format:'SS:QQQ'}]
-			}
-	};
-	
-	var chartConfig2 = {
-			"type": "serial",
-			"theme": "light",
-			"dataProvider": chartData2,
-			"valueAxes": [{
-					"position": "left",
-					"title": "In2"
-			}],
-			"graphs": [{
-					"id": "g1",
-					"fillAlphas": 0.4,
-					"valueField": "value"
-			}],
-			"chartCursor": {
-					"categoryBalloonDateFormat": "NN:S.QQQ",
-					"cursorPosition": "mouse"
-			},
-			"categoryField": "date",
-			"categoryAxis": {
-					"minPeriod": "fff",
-					"parseDates": true,
-					"dateFormats": [{period:'fff',format:'S.QQQ'},
-	{period:'ss',format:'S.QQQ'},
-	{period:'mm',format:'NN:SS'},
-	{period:'hh',format:'NN:SS'},
-	{period:'DD',format:'SS:QQQ'},
-	{period:'WW',format:'SS:QQQ'},
-	{period:'MM',format:'SS:QQQ'},
-	{period:'YYYY',format:'SS:QQQ'}]
-			},
-		"chartScrollbar": {
-			"oppositeAxis": false,
-			"offset": 30
-		},
-	};
-	
-	
-	var charts = [];
-	charts.push(AmCharts.makeChart("chartdiv", chartConfig));
-	charts.push(AmCharts.makeChart("chartdiv2", chartConfig2));
-	
-	for (var x in charts) {
-		charts[x].addListener("zoomed", syncZoom);
-		charts[x].addListener("init", addCursorListeners);
-	}
-	
-	function addCursorListeners(event) {
-		event.chart.chartCursor.addListener("changed", handleCursorChange);
-		event.chart.chartCursor.addListener("onHideCursor", handleHideCursor);
-	}
-	
-	function syncZoom(event) {
-		for (x in charts) {
-			if (charts[x].ignoreZoom) {
-				charts[x].ignoreZoom = false;
-			}
-			if (event.chart != charts[x]) {
-				charts[x].ignoreZoom = true;
-				charts[x].zoomToDates(event.startDate, event.endDate);
-			}
-		}
-	}
-	
-	function handleCursorChange(event) {
-		for (var x in charts) {
-			if (event.chart != charts[x]) {
-				charts[x].chartCursor.syncWithCursor(event.chart.chartCursor);
-			}
-		}
-	}
-	
-	function handleHideCursor() {
-		for (var x in charts) {
-			if (charts[x].chartCursor.hideCursor) {
-				charts[x].chartCursor.forceShow = false;
-				charts[x].chartCursor.hideCursor(false);
-			}
-		}
-	}
-	
-	
-	function generateChartData() {
-			var chartData = [];
-	
-	var firstDate = new Date(2000,1,2,0 ,0,0,0);
-			var visits = 0;
-			for (var i = 0; i < 10; i++) {
-					var newDate = new Date(firstDate);
-					newDate.setMilliseconds(newDate.getMilliseconds() + i*100);
-					visits = Math.round((Math.random()<0.5?0:1));
-					
-					if (i > 0) {
-						chartData.push({
-							date: chartData[chartData.length-1].date,
-							value: visits
-						});
-					}
+  var chartData = getChartData();
+  var charts = [];
+  $.each(chartData, function(pinLabel, dataProvider) {
+    console.log("fuck", pinLabel, dataProvider);
+    $('#chartsContainer').append('<div id="chart_'+pinLabel+'"></div>');
 
-					chartData.push({
-							date: newDate,
-							value: visits
-					});
-			}
-			return chartData;
-	}
-	
-	var k = 10;
-	updateMonitorControl = setInterval( function() {
-		var firstDate = new Date(2000,1,2,0 ,0,0,0);
-		k++;
-		var newDate = new Date( firstDate );
-		newDate.setMilliseconds(newDate.getMilliseconds() + k*100);
-		var visits = Math.round((Math.random()<0.5?0:1));
+    var chartConfig = {
+      "type": "serial",
+      "theme": "light",
+      "dataProvider": dataProvider,
+      "valueAxes": [{
+        "position": "left",
+        "title": pinLabel
+      }],
+      "graphs": [{
+        "id": "g1",
+        "fillAlphas": 0.4,
+        "valueField": "value"
+      }],
+      "chartCursor": {
+        "categoryBalloonDateFormat": "NN:S.QQQ",
+        "cursorPosition": "mouse"
+      },
+      "categoryField": "date",
+      "categoryAxis": {
+        "minPeriod": "fff",
+        "parseDates": true,
+        "dateFormats": [{period:'fff',format:'S.QQQ'},
+          {period:'ss',format:'S.QQQ'},
+          {period:'mm',format:'NN:SS'},
+          {period:'hh',format:'NN:SS'},
+          {period:'DD',format:'SS:QQQ'},
+          {period:'WW',format:'SS:QQQ'},
+          {period:'MM',format:'SS:QQQ'},
+          {period:'YYYY',format:'SS:QQQ'}]
+      }
+    };
 
-		charts[1].dataProvider.push( {
-			date: charts[1].dataProvider[charts[0].dataProvider.length-1].date,
-			value: visits
-		} );
-		charts[0].dataProvider.push( {
-			date: charts[0].dataProvider[charts[0].dataProvider.length-1].date,
-			value: visits
-		} );
+    if (charts.length == 0) {
+      chartConfig['chartScrollbar'] = {
+        "offset": 30,
+        "position": "top"
+      };
+    }
 
-		charts[1].dataProvider.push( {
-			date: newDate,
-			value: visits
-		} );
-		charts[0].dataProvider.push( {
-			date: newDate,
-			value: visits
-		} );
-		charts[0].validateData();
-		charts[1].validateData();
-	}, 1000 );
-	
+    charts.push(AmCharts.makeChart("chart_" + pinLabel, chartConfig));
+  });
+
+
+  for (var x in charts) {
+    charts[x].addListener("zoomed", syncZoom);
+    charts[x].addListener("init", addCursorListeners);
+  }
+  
+  function addCursorListeners(event) {
+    event.chart.chartCursor.addListener("changed", handleCursorChange);
+    event.chart.chartCursor.addListener("onHideCursor", handleHideCursor);
+  }
+  
+  function syncZoom(event) {
+    for (x in charts) {
+      if (charts[x].ignoreZoom) {
+        charts[x].ignoreZoom = false;
+      }
+      if (event.chart != charts[x]) {
+        charts[x].ignoreZoom = true;
+        charts[x].zoomToDates(event.startDate, event.endDate);
+      }
+    }
+  }
+  
+  function handleCursorChange(event) {
+    for (var x in charts) {
+      if (event.chart != charts[x]) {
+        charts[x].chartCursor.syncWithCursor(event.chart.chartCursor);
+      }
+    }
+  }
+
+  function handleHideCursor() {
+    for (var x in charts) {
+      if (charts[x].chartCursor.hideCursor) {
+        charts[x].chartCursor.forceShow = false;
+        charts[x].chartCursor.hideCursor(false);
+      }
+    }
+  }
+
+/*
+  updateMonitorControl = setInterval(function() {
+
+    var chartData = getChartData();
+    var c = 0;
+    $.each(chartData, function(pinLabel, obj) {
+
+      $.each(obj, function(key, tobj) {
+        charts[c].dataProvider.push({
+          date: tobj.date,
+          value: tobj.value
+        });
+      });
+      charts[c].validateData();
+      c++;
+    });
+  }, 1000 );
+  */
 });
 
 $('#stopRealtimeMonitor').click(function() {
-	clearInterval(updateMonitorControl);
+  clearInterval(updateMonitorControl);
 });
 
-	function generateChartData3() {
+  function getChartData() {
 
-		var objData = getTestData();
-		
-		var chartData = [];
-		var initime = objData.data[0].localtime;
-		$.each(objData.data, function(k, obj) {
-			console.log(k, obj)
-				chartData.push({
-					time: (obj.localtime - initime)/1000,
-					signal: obj.inputs.In1
-				});
-			if (k > 0) {
-				chartData.push({
-					time: (obj.localtime - initime)/1000,
-					signal: objData.data[k].inputs.In1
-				});
-			}
-		});
-		console.log(chartData);
-		return chartData;
-	}
+    var objData = getTestData();
+    
+    var chartData = {};
+    var firstDate = new Date(2000,1,2,0 ,0,0,0);
 
-	function getTestData() {
-		return JSON.parse(`{
-	"data": [{
-			"localtime": 142489364,
-			"inputs": {
-				"In1": 1
-			},
-			"outputs": {
-				"Out2": 0,
-				"Out1": 0
-			}
-		}, {
-			"localtime": 142548619,
-			"inputs": {
-				"In2": 0,
-				"In1": 1
-			},
-			"outputs": {
-				"Out2": 0,
-				"Out1": 0
-			}
-		}, {
-			"localtime": 142650974,
-			"inputs": {
-				"In1": 0,
-				"In2": 0,
-				"In3": 0
-			},
-			"outputs": {
-				"Out2": 1,
-				"Out1": 1
-			}
-		}, {
-			"localtime": 142747704,
-			"inputs": {
-				"In1": 1,
-				"In2": 0,
-				"In3": 1
-			},
-			"outputs": {
-				"Out2": 0,
-				"Out1": 0
-			}
-		}, {
-			"localtime": 142946597,
-			"inputs": {
-				"In1": 0,
-				"In2": 0,
-				"In3": 0
-			},
-			"outputs": {
-				"Out2": 1,
-				"Out1": 1
-			}
-		}, {
-			"localtime": 143048652,
-			"inputs": {
-				"In1": 1,
-				"In2": 0,
-				"In3": 1
-			},
-			"outputs": {
-				"Out2": 0,
-				"Out1": 0
-			}
-		}
-	],
-	"type": "datalog"
+    $.each(gpios, function(pin, num) {
+      chartData[pin] = [];
+    });
+
+    var pushPinData = function (pinLabel, pinValue, obj, newDate) {
+      var dtemp = (chartData[pinLabel] && (chartData[pinLabel].length-1)>0) ? chartData[pinLabel][chartData[pinLabel].length-1].date : 0;
+      if (dtemp) {
+        chartData[pinLabel].push({
+          date: dtemp,
+          value: pinValue
+        });
+      }
+      chartData[pinLabel].push({
+        date: newDate,
+        value: pinValue
+      });
+    };
+
+    var initime = objData.data[0].localtime;
+    $.each(objData.data, function(k, obj) {
+      var newDate = new Date(firstDate);
+      newDate.setMilliseconds(newDate.getMilliseconds() + (obj.localtime - initime)/1000);
+
+      var _t = $.extend({},obj['inputs'], obj['outputs']);
+      console.log(_t)
+      $.each(gpios, function(pinLabel) {
+        pushPinData(pinLabel , _t[pinLabel], obj, newDate);
+      });
+
+    });
+    console.log(chartData);
+    return chartData;
+  }
+
+  function getTestData() {
+    return JSON.parse(`{
+  "data": [{
+      "localtime": 142489364,
+      "inputs": {
+        "In1": 1
+      },
+      "outputs": {
+        "Out2": 0,
+        "Out1": 0
+      }
+    }, {
+      "localtime": 142548619,
+      "inputs": {
+        "In1": 1,
+        "In2": 0
+      },
+      "outputs": {
+        "Out2": 0,
+        "Out1": 0
+      }
+    }, {
+      "localtime": 142650974,
+      "inputs": {
+        "In1": 0,
+        "In2": 0,
+        "In3": 0
+      },
+      "outputs": {
+        "Out2": 1,
+        "Out1": 1
+      }
+    }, {
+      "localtime": 142747704,
+      "inputs": {
+        "In1": 1,
+        "In2": 0,
+        "In3": 1
+      },
+      "outputs": {
+        "Out2": 0,
+        "Out1": 0
+      }
+    }, {
+      "localtime": 142946597,
+      "inputs": {
+        "In1": 0,
+        "In2": 0,
+        "In3": 0
+      },
+      "outputs": {
+        "Out2": 1,
+        "Out1": 1
+      }
+    }, {
+      "localtime": 143048652,
+      "inputs": {
+        "In1": 1,
+        "In2": 0,
+        "In3": 1
+      },
+      "outputs": {
+        "Out2": 0,
+        "Out1": 0
+      }
+    }
+  ],
+  "type": "datalog"
 }`);
-	}
+  }
 
-	</script>
+  </script>
 
-	<script>if (window.module) module = window.module;</script>
+  <script>if (window.module) module = window.module;</script>
   </body>
 </html>

@@ -785,52 +785,49 @@
       var title = 'Configuração de OSC ';
       var $btnSalvarOSC = $('<button>Salvar</button>').
       on('click', function(event) {
-          if ($('input[name="value[]"]').length == 0){
-            alert("adicione uma sequencia");
+        if ($('input[name="value[]"]').length == 0){
+          alert("adicione uma sequencia");
+          return;
+        }
+
+        arrDelays = [];
+        arrValues = [];
+        var slices = [];
+
+        var delays = $('input[name="time[]"]');
+        var values = $('input[name="value[]"]');
+        var acTime = 0; var first;
+        $.each(delays, function(i, elem) {
+          if (typeof elem == 'function' || elem.value == ''){  // workaround
             return;
           }
-
-          arrDelays = [];
-          arrValues = [];
-          var slices = [];
-
-          var delays = $('input[name="time[]"]');
-          var values = $('input[name="value[]"]');
-          var acTime = 0; var first;
-          $.each(delays, function(i, elem) {
-            if (typeof elem == 'function' || elem.value == ''){  // workaround
-              return;
-            }
-            var [val, time] = [values[i].value, elem.value];
-            val = Number(val); time = Number(time);
-            arrDelays.push(time);
-            arrValues.push(val);
-            if (i==0) {
-              out1.setValue(val? onValue : offValue);
-              first = [val,time];
-              acTime += time;
-              return;
-            }
-            slices.push([function(val){
-              out1.setValue(val? onValue : offValue);
-            }, acTime, val]);
+          var [val, time] = [values[i].value, elem.value];
+          val = Number(val); time = Number(time);
+          arrDelays.push(time);
+          arrValues.push(val);
+          if (i==0) {
+            out1.setValue(val? onValue : offValue);
+            first = [val,time];
             acTime += time;
-          });
+            return;
+          }
           slices.push([function(val){
             out1.setValue(val? onValue : offValue);
-          }, acTime, first[0]]);
+          }, acTime, val]);
+          acTime += time;
+        });
+        slices.push([function(val){
+          out1.setValue(val? onValue : offValue);
+        }, acTime, first[0]]);
 
-          if (timerId != null) {
-            window.clearInterval(timerId);
-            timerId = null;
-          }
+        if (timerId != null) {
+          window.clearInterval(timerId);
+          timerId = null;
+        }
 
-          timerId = window.setInterval(function(slices) {
-            slices.map(function(slice) { window.setTimeout(...slice); });
-          }, acTime, slices);
-
-          device.deviceDef.values = arrValues;
-          device.deviceDef.timeslices = arrDelays;
+        timerId = window.setInterval(function(slices) {
+          slices.map(function(slice) { window.setTimeout(...slice); });
+        }, acTime, slices);
 
         $dlg.remove();
 
@@ -849,23 +846,24 @@
       }
 
       var sliceTemplate = `
-      <div>
-        sinal(0,1): <input type="text" style="width:30px;" name="value[]" />
-        tempo(ms)[min 100]: <input type="text" style="width:34px" name="time[]" />
+      <div style="margin:2px;">
+        <input type="text" style="margin-left:6px;width:30px;" name="value[]" />
+        <input type="text" style="margin-left:45px;width:34px" name="time[]" />
       </div>`;
       var savedData = '';
       if (arrValues.length > 0) {
         arrValues.forEach(function (value, i) {
           savedData += `
-          <div>
-            sinal(0,1): <input type="text" style="width:30px;" name="value[]" value="${value}" />
-            tempo(ms)[min 100]: <input type="text" style="width:34px" name="time[]" value="${arrDelays[i]}" />
+          <div style="margin:2px">
+            <input type="text" style="margin-left:6px;width:30px;" name="value[]" value="${value}" />
+            <input type="text" style="margin-left:45px;width:34px" name="time[]" value="${arrDelays[i]}" />
           </div>`;
         });
       }
 
       var btnAddAction = "$(this).before($(\'"+safe_tags_replace(sliceTemplate)+"\'))";
       var $bodyDialog = $('<div style="font-size:12px"></div>').
+      append('<b>sinal(0,1)</b><b style="margin-left:10px">tempo(ms)[min 100]</b><br/>').
       append(savedData).
       append('<button onclick="'+btnAddAction+'">+</button> ').
       append($btnSalvarOSC);
