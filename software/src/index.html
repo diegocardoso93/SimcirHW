@@ -145,8 +145,20 @@ $(function() {
 
   var host = window.document.location.host.replace(/:.*/, '');
   var ws = new WebSocket('ws://' + host + ':9061');
+  var startMonitor = 0; var stopMonitor = 0;
+  var monitorController = MonitorController();
   ws.onmessage = function (event) {
     console.log(event.data);
+    var wsMessage = JSON.parse(event.data);
+    if (wsMessage.type=="datalog") {
+      if (startMonitor==0) {
+        //updateMonitorData(wsMessage.data);
+        monitorController.makeCharts(wsMessage.data);
+        startMonitor = 1;
+      } else if (stopMonitor==0){
+        monitorController.updateMonitorData(wsMessage.data);
+      }
+    }
   };
   ws.onopen = function() {
     console.log('open ws connection');
@@ -210,11 +222,11 @@ $(function() {
 
   <script src="execution_monitor/monitor_script.js"></script>
 
-<style>
-  #chartsContainer, [id^=chart_] {
-    width: 100%;
-    height: 200px;
-  }
+  <style>
+    #chartsContainer, [id^=chart_] {
+      width: 100%;
+      height: 200px;
+    }
   </style>
 
   <script src="execution_monitor/amcharts.js"></script>
@@ -225,93 +237,7 @@ $(function() {
 var updateMonitorControl;
 $('#startRealtimeMonitor').click(function() {
 
-  var chartData = getChartData();
-  var charts = [];
-  $.each(chartData, function(pinLabel, dataProvider) {
-    console.log("fuck", pinLabel, dataProvider);
-    $('#chartsContainer').append('<div id="chart_'+pinLabel+'"></div>');
-
-    var chartConfig = {
-      "type": "serial",
-      "theme": "light",
-      "dataProvider": dataProvider,
-      "valueAxes": [{
-        "position": "left",
-        "title": pinLabel
-      }],
-      "graphs": [{
-        "id": "g1",
-        "fillAlphas": 0.4,
-        "valueField": "value"
-      }],
-      "chartCursor": {
-        "categoryBalloonDateFormat": "NN:S.QQQ",
-        "cursorPosition": "mouse"
-      },
-      "categoryField": "date",
-      "categoryAxis": {
-        "minPeriod": "fff",
-        "parseDates": true,
-        "dateFormats": [{period:'fff',format:'S.QQQ'},
-          {period:'ss',format:'S.QQQ'},
-          {period:'mm',format:'NN:SS'},
-          {period:'hh',format:'NN:SS'},
-          {period:'DD',format:'SS:QQQ'},
-          {period:'WW',format:'SS:QQQ'},
-          {period:'MM',format:'SS:QQQ'},
-          {period:'YYYY',format:'SS:QQQ'}]
-      }
-    };
-
-    if (charts.length == 0) {
-      chartConfig['chartScrollbar'] = {
-        "offset": 30,
-        "position": "top"
-      };
-    }
-
-    charts.push(AmCharts.makeChart("chart_" + pinLabel, chartConfig));
-  });
-
-
-  for (var x in charts) {
-    charts[x].addListener("zoomed", syncZoom);
-    charts[x].addListener("init", addCursorListeners);
-  }
-  
-  function addCursorListeners(event) {
-    event.chart.chartCursor.addListener("changed", handleCursorChange);
-    event.chart.chartCursor.addListener("onHideCursor", handleHideCursor);
-  }
-  
-  function syncZoom(event) {
-    for (x in charts) {
-      if (charts[x].ignoreZoom) {
-        charts[x].ignoreZoom = false;
-      }
-      if (event.chart != charts[x]) {
-        charts[x].ignoreZoom = true;
-        charts[x].zoomToDates(event.startDate, event.endDate);
-      }
-    }
-  }
-  
-  function handleCursorChange(event) {
-    for (var x in charts) {
-      if (event.chart != charts[x]) {
-        charts[x].chartCursor.syncWithCursor(event.chart.chartCursor);
-      }
-    }
-  }
-
-  function handleHideCursor() {
-    for (var x in charts) {
-      if (charts[x].chartCursor.hideCursor) {
-        charts[x].chartCursor.forceShow = false;
-        charts[x].chartCursor.hideCursor(false);
-      }
-    }
-  }
+  MonitorController().makeCharts();
 
 /*
   updateMonitorControl = setInterval(function() {
@@ -333,41 +259,150 @@ $('#startRealtimeMonitor').click(function() {
   */
 });
 
-$('#stopRealtimeMonitor').click(function() {
-  clearInterval(updateMonitorControl);
-});
+var MonitorController = function() {
 
-  function getChartData() {
+  let charts = [];
 
-    var objData = getTestData();
-    
-    var chartData = {};
-    var firstDate = new Date(2000,1,2,0 ,0,0,0);
+  function makeCharts(str) {
+    let chartData = getChartData(str, true);
+    $.each(chartData, (pinLabel, dataProvider) => {
+      console.log("fuck", pinLabel, dataProvider);
+      $('#chartsContainer').append('<div id="chart_' + pinLabel + '"></div>');
+
+      let chartConfig = {
+        "type": "serial",
+        "theme": "light",
+        "dataProvider": dataProvider,
+        "valueAxes": [{
+          "position": "left",
+          "title": pinLabel
+        }],
+        "graphs": [{
+          "id": "g1",
+          "fillAlphas": 0.4,
+          "valueField": "value"
+        }],
+        "chartCursor": {
+          "categoryBalloonDateFormat": "NN:S.QQQ",
+          "cursorPosition": "mouse"
+        },
+        "categoryField": "date",
+        "categoryAxis": {
+          "minPeriod": "fff",
+          "parseDates": true,
+          "dateFormats": [{period: 'fff', format: 'S.QQQ'},
+            {period: 'ss', format: 'S.QQQ'},
+            {period: 'mm', format: 'NN:SS'},
+            {period: 'hh', format: 'NN:SS'},
+            {period: 'DD', format: 'SS:QQQ'},
+            {period: 'WW', format: 'SS:QQQ'},
+            {period: 'MM', format: 'SS:QQQ'},
+            {period: 'YYYY', format: 'SS:QQQ'}]
+        }
+      };
+
+      if (charts.length == 0) {
+        chartConfig['chartScrollbar'] = {
+          "offset": 30,
+          "position": "top"
+        };
+      }
+
+      charts.push(AmCharts.makeChart("chart_" + pinLabel, chartConfig));
+    });
+
+    for (let x in charts) {
+      charts[x].addListener("zoomed", syncZoom);
+      charts[x].addListener("init", addCursorListeners);
+    }
+  }
+
+  function addCursorListeners(event) {
+    event.chart.chartCursor.addListener("changed", handleCursorChange);
+    event.chart.chartCursor.addListener("onHideCursor", handleHideCursor);
+  }
+
+  function syncZoom(event) {
+    for (let x in charts) {
+      if (charts[x].ignoreZoom) {
+        charts[x].ignoreZoom = false;
+      }
+      if (event.chart != charts[x]) {
+        charts[x].ignoreZoom = true;
+        charts[x].zoomToDates(event.startDate, event.endDate);
+      }
+    }
+  }
+
+  function handleCursorChange(event) {
+    for (let x in charts) {
+      if (event.chart != charts[x]) {
+        charts[x].chartCursor.syncWithCursor(event.chart.chartCursor);
+      }
+    }
+  }
+
+  function handleHideCursor() {
+    for (let x in charts) {
+      if (charts[x].chartCursor.hideCursor) {
+        charts[x].chartCursor.forceShow = false;
+        charts[x].chartCursor.hideCursor(false);
+      }
+    }
+  }
+
+  function updateMonitorData(str) {
+    //console.log("asdas",charts);
+    //monitorData = str;
+    console.log(charts)
+    let chartData = getChartData(str, false);
+    let c = 0;
+    $.each(chartData, (pinLabel, obj) => {
+      charts[c].dataProvider.push({date: obj[0].date, value: charts[c].dataProvider[charts[c].dataProvider.length-1].value});
+      $.each(obj, (key, tobj) => {
+        //console.log("DSA",this.charts[c].dataProvider[this.charts[c].dataProvider.length-1].ts,tobj.ts )
+        //date.setDate(this.charts[c].dataProvider[this.charts[c].dataProvider.length-1].date.getMilliseconds() + tobj.date.getMilliseconds())
+        charts[c].dataProvider.push({
+          date: tobj.date,
+          value: tobj.value
+        });
+      });
+      charts[c].validateData();
+      c++;
+    });
+  }
+
+  let initime = 0;
+  function getChartData(str, first) {
+
+    //var objData = getTestData();
+    let objData = str;
+    let chartData = {};
+    let firstDate = new Date(2000,1,2,0 ,0,0,0);
 
     $.each(gpios, function(pin, num) {
       chartData[pin] = [];
     });
 
-    var pushPinData = function (pinLabel, pinValue, obj, newDate) {
-      var dtemp = (chartData[pinLabel] && (chartData[pinLabel].length-1)>0) ? chartData[pinLabel][chartData[pinLabel].length-1].date : 0;
+    let pushPinData = function (pinLabel, pinValue, obj, newDate) {
+      let dtemp = (chartData[pinLabel] && (chartData[pinLabel].length-1)>0) ? 1 : 0;
       if (dtemp) {
         chartData[pinLabel].push({
-          date: dtemp,
-          value: pinValue
+          date: newDate,
+          value: chartData[pinLabel][chartData[pinLabel].length-1].value
         });
       }
       chartData[pinLabel].push({
         date: newDate,
-        value: pinValue
+        value: pinValue || 0
       });
     };
 
-    var initime = objData.data[0].localtime;
-    $.each(objData.data, function(k, obj) {
-      var newDate = new Date(firstDate);
+    if (first) initime = objData[0].localtime;
+    $.each(objData, function(k, obj) {
+      let newDate = new Date(firstDate);
       newDate.setMilliseconds(newDate.getMilliseconds() + (obj.localtime - initime)/1000);
-
-      var _t = $.extend({},obj['inputs'], obj['outputs']);
+      let _t = $.extend({},obj['inputs'], obj['outputs']);
       console.log(_t)
       $.each(gpios, function(pinLabel) {
         pushPinData(pinLabel , _t[pinLabel], obj, newDate);
@@ -377,76 +412,85 @@ $('#stopRealtimeMonitor').click(function() {
     console.log(chartData);
     return chartData;
   }
+  return {
+    makeCharts: makeCharts,
+    updateMonitorData: updateMonitorData
+  }
+}
+
+
+
+$('#stopRealtimeMonitor').click(function() {
+  clearInterval(updateMonitorControl);
+});
 
   function getTestData() {
-    return JSON.parse(`{
-  "data": [{
-      "localtime": 142489364,
-      "inputs": {
-        "In1": 1
-      },
-      "outputs": {
-        "Out2": 0,
-        "Out1": 0
-      }
-    }, {
-      "localtime": 142548619,
-      "inputs": {
-        "In1": 1,
-        "In2": 0
-      },
-      "outputs": {
-        "Out2": 0,
-        "Out1": 0
-      }
-    }, {
-      "localtime": 142650974,
-      "inputs": {
-        "In1": 0,
-        "In2": 0,
-        "In3": 0
-      },
-      "outputs": {
-        "Out2": 1,
-        "Out1": 1
-      }
-    }, {
-      "localtime": 142747704,
-      "inputs": {
-        "In1": 1,
-        "In2": 0,
-        "In3": 1
-      },
-      "outputs": {
-        "Out2": 0,
-        "Out1": 0
-      }
-    }, {
-      "localtime": 142946597,
-      "inputs": {
-        "In1": 0,
-        "In2": 0,
-        "In3": 0
-      },
-      "outputs": {
-        "Out2": 1,
-        "Out1": 1
-      }
-    }, {
-      "localtime": 143048652,
-      "inputs": {
-        "In1": 1,
-        "In2": 0,
-        "In3": 1
-      },
-      "outputs": {
-        "Out2": 0,
-        "Out1": 0
-      }
-    }
-  ],
-  "type": "datalog"
-}`);
+    return JSON.parse(`
+    [{
+			"localtime": 26945319,
+			"inputs": {
+				"In1": 1
+			},
+			"outputs": {
+				"Out2": 0,
+				"Out1": 0
+			}
+		}, {
+			"localtime": 27006354,
+			"inputs": {
+				"In2": 0,
+				"In1": 1
+			},
+			"outputs": {
+				"Out2": 0,
+				"Out1": 0
+			}
+		}, {
+			"localtime": 27111617,
+			"inputs": {
+				"In1": 1,
+				"In2": 0,
+				"In3": 0
+			},
+			"outputs": {
+				"Out2": 1,
+				"Out1": 1
+			}
+		}, {
+			"localtime": 27205667,
+			"inputs": {
+				"In1": 1,
+				"In2": 0,
+				"In3": 1
+			},
+			"outputs": {
+				"Out2": 0,
+				"Out1": 0
+			}
+		}, {
+			"localtime": 27404104,
+			"inputs": {
+				"In1": 1,
+				"In2": 0,
+				"In3": 0
+			},
+			"outputs": {
+				"Out2": 1,
+				"Out1": 1
+			}
+		}, {
+			"localtime": 27506277,
+			"inputs": {
+				"In1": 1,
+				"In2": 0,
+				"In3": 1
+			},
+			"outputs": {
+				"Out2": 0,
+				"Out1": 0
+			}
+		}
+	]`);
   }
 
   </script>

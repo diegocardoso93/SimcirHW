@@ -8,6 +8,8 @@ local simcirhw = {}
 local SimcirHW = {}
 local HwInterface = {}
 
+local sjson = require "json"
+
 function SimcirHW:eval_message(str_msg)
   local message = sjson.decode(str_msg)
   if message.type == "circuit" then
@@ -55,7 +57,8 @@ function SimcirHW:configure_hw_gpios()
       
     end
     if self.circuit.outputs[k] then
-      gpio.mode(HwInterface.get_pin(v), gpio.OUTPUT)
+      --gpio.mode(HwInterface.get_pin(v), gpio.OUTPUT)
+      gpio.config({ gpio={HwInterface.get_pin(v)}, dir=gpio.OUT })
     end
   end
 end
@@ -64,7 +67,7 @@ function SimcirHW:configure_inputs()
   for k, inp in pairs(self.circuit.inputs) do
     -- virtual input
     if type(inp) == "table" then
-      local acc_time = 1
+      local acc_time = 100
       inp.timeslices[#inp.timeslices+1] = inp.timeslices[#inp.timeslices]
       inp.values[#inp.values+1] = inp.values[#inp.values]
       for i, time in ipairs(inp.timeslices) do
@@ -77,14 +80,16 @@ function SimcirHW:configure_inputs()
             self:register_log()
             t:unregister()
             if i == #inp.values then
+              print("aA")
               self.logger:format_message_to_send()
-              self.ws:send(self.logger.message)
+              self.ws.send(self.logger.message)
+              print("bB")
             end
           end)
         acc_time = acc_time + time
         self.timer_slices[#self.timer_slices+1] = t_tmr
       end
-    else if ~self.circuit.inputs[k] then
+    elseif self.circuit.inputs[k] == nil then
       -- fixed input value
       self.state.inputs[k] = inp
       self:eval()

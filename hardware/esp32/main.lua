@@ -3,6 +3,7 @@
 --require "utils"
 
 local SimcirHW = require("simcirhw")
+
 local LOGGER_REFRESH_RATE = 3000
 local loggerTimer = nil
 
@@ -25,16 +26,17 @@ function handle_ws_message(str_msg)
   end
 end
 
-local ws = websocket.createClient()
-ws:on("connection", function() 
+local ws = require("esp32_websocket")
+ws.on("connection", function() 
   print("got ws connection")
 end)
-ws:on("receive", function(_, msg, code)
+ws.on("receive", function(msg, fin)
+  print("Got msg:" .. msg .. ", fin:", fin)
   SCH = SimcirHW:new()
   SCH.ws = ws
   handle_ws_message(msg)
 end)
-ws:on("close", function(_)
+ws.on("close", function(_)
    print("ws connection closed")
 end)
-ws:connect("ws://192.168.1.100:9061")
+ws.connect("192.168.4.2", 9061)

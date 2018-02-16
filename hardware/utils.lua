@@ -1,17 +1,10 @@
 
-function extends( baseClass )
-    local new_class = {}
-    local class_mt = { __index = new_class }
+print(tmr.now())
 
-    function new_class:create()
-        local newinst = {}
-        setmetatable( newinst, class_mt )
-        return newinst
-    end
+gpio.write(0, gpio.LOW)
 
-    if baseClass then
-        setmetatable( new_class, { __index = baseClass } )
-    end
+print(tmr.now())
 
-    return new_class
-end
+gpio.write(0, gpio.HIGH)
+
+print(tmr.now())

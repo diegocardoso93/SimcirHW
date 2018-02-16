@@ -11,7 +11,7 @@ Server.startServer = function() {
     const wss = new WebSocket.Server({server: server});
 
     wss.on('connection', function (ws) {
-
+console.log("New connection.")
       ws.on('message', function incoming(data) {
         wss.clients.forEach(function each(client) {
           if (client !== ws && client.readyState === WebSocket.OPEN) {
