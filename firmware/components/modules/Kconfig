@@ -100,7 +100,7 @@ config LUA_MODULE_GPIO
 
 config LUA_MODULE_I2C
   bool "I2C module"
-  default "y"
+  default "n"
   help
       Includes the I2C module (recommended).
 
@@ -124,7 +124,7 @@ config LUA_MODULE_NODE
 
 config LUA_MODULE_OW
   bool "1-Wire module"
-  default "y"
+  default "n"
   help
       Includes the 1-Wire (ow) module (recommended).
 

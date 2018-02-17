@@ -68,9 +68,8 @@ static int tmr_now(lua_State* L)
 {
   struct timeval tv;
   gettimeofday(&tv, NULL);
-	//lua_pushinteger(L, tv.tv_sec + tv.tv_usec * 1e-6);
-	lua_pushinteger(L, tv.tv_sec * 1e6 + tv.tv_usec);
-	return 1;
+  lua_pushinteger(L, tv.tv_sec * 1e6 + tv.tv_usec);
+  return 1;
 }
 
 static tmr_t tmr_get( lua_State *L, int stack )
@@ -260,7 +259,7 @@ static const LUA_REG_TYPE tmr_dyn_map[] = {
 };
 
 static const LUA_REG_TYPE tmr_map[] = {
-	{ LSTRKEY( "now" ),          LFUNCVAL( tmr_now ) },
+  { LSTRKEY( "now" ),          LFUNCVAL( tmr_now ) },
   { LSTRKEY( "create" ),       LFUNCVAL( tmr_create ) },
   { LSTRKEY( "ALARM_SINGLE" ), LNUMVAL( TIMER_MODE_SINGLE ) },
   { LSTRKEY( "ALARM_SEMI" ),   LNUMVAL( TIMER_MODE_SEMI ) },
