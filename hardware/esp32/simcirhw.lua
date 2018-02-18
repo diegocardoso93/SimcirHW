@@ -53,11 +53,10 @@ function SimcirHW:configure_hw_gpios()
         self:register_log()
       end
       
-      gpio.trig(HwInterface.get_pin(v), "both", debounce(inputChanged))
+      gpio.trig(HwInterface.get_pin(v), gpio.INTR_UP_DOWN, debounce(inputChanged))
       
     end
     if self.circuit.outputs[k] then
-      --gpio.mode(HwInterface.get_pin(v), gpio.OUTPUT)
       gpio.config({ gpio={HwInterface.get_pin(v)}, dir=gpio.OUT })
     end
   end
@@ -80,16 +79,14 @@ function SimcirHW:configure_inputs()
             self:register_log()
             t:unregister()
             if i == #inp.values then
-              print("aA")
               self.logger:format_message_to_send()
               self.ws.send(self.logger.message)
-              print("bB")
             end
           end)
         acc_time = acc_time + time
         self.timer_slices[#self.timer_slices+1] = t_tmr
       end
-    elseif self.circuit.inputs[k] == nil then
+    elseif self.circuit.pin_map[k] == nil then
       -- fixed input value
       self.state.inputs[k] = inp
       self:eval()

@@ -1,9 +1,9 @@
 
+local sjson = require "json"
+
 local logger = {}
 
 local Logger = {}
-
-local sjson = require "json"
 
 function Logger:push_state(data)
   -- data.timestamp = tmr.get_time()
@@ -14,15 +14,9 @@ function Logger:push_state(data)
   for inpk, inpv in pairs(data.inputs) do
     _t.inputs[inpk] = inpv
   end
-  if #self.data == 0 then
-    x = 19498775
-  else
-    x = self.data[#self.data].localtime + 20000
-  end
-  _t.localtime = x -- microseconds
-  if #self.data == 1 then
+  _t.localtime = tmr.now() -- microseconds
+  
   self.data[#self.data+1] = _t
-  end
 end
 
 -- free memmory after cycle

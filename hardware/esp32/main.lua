@@ -3,6 +3,7 @@
 --require "utils"
 
 local SimcirHW = require("simcirhw")
+local ws = require("websocket")
 
 local LOGGER_REFRESH_RATE = 3000
 local loggerTimer = nil
@@ -19,14 +20,13 @@ function handle_ws_message(str_msg)
       loggerTimer = tmr.create():alarm(LOGGER_REFRESH_RATE, tmr.ALARM_AUTO, function()
         --print(SCH.logger.message)
         SCH.logger:format_message_to_send()
-        SCH.ws:send(SCH.logger.message)
+        SCH.ws.send(SCH.logger.message)
         --SCH.logger:clean()
       end)
     end
   end
 end
 
-local ws = require("esp32_websocket")
 ws.on("connection", function() 
   print("got ws connection")
 end)

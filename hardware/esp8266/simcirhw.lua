@@ -78,13 +78,13 @@ function SimcirHW:configure_inputs()
             t:unregister()
             if i == #inp.values then
               self.logger:format_message_to_send()
-              self.ws:send(self.logger.message)
+              self.ws.send(self.logger.message)
             end
           end)
         acc_time = acc_time + time
         self.timer_slices[#self.timer_slices+1] = t_tmr
       end
-    else if ~self.circuit.inputs[k] then
+    elseif self.circuit.inputs[k] == nil then
       -- fixed input value
       self.state.inputs[k] = inp
       self:eval()

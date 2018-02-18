@@ -26,6 +26,7 @@
     <div id="tabs-2">
       <select id="boardSelector">
         <option>selecione uma placa</option>
+        <option value="NodeMCU_ESP32S">NodeMCU ESP-32S WiFi ESP32</option>
         <option value="NodeMCU_V2">NodeMCU ESP-12 WiFi ESP8266</option>
         <option value="Wemos_D1">WeMos D1 R1 Wifi ESP8266</option>
       </select>
@@ -95,6 +96,29 @@ $(function() {
       HTMLoptions += '<option>' + k + '</option>';
     });
     switch ($(this).val()){
+      case 'NodeMCU_ESP32S':
+        HTMLboard += `
+          <input type="hidden" name="board" value="NodeMCU_ESP32S" />
+          <input type="hidden" name="hardware" value="esp32" />
+          <div style="float:left;width:80px;text-align:right;margin-right:10px;">
+            <select selectType="boardPin" name="SD3" style="margin-top:138px;width:80px">${HTMLoptions}</select>
+          </div>
+          `;
+        HTMLboard += `<img src="img/NodeMCU_V2.png" style="float:left;height:450px;"/>`;
+        HTMLboard += `
+          <div style="float:left;width:80px;margin-left:10px;">
+            <select selectType="boardPin" name="D0" style="margin-top:47px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D1" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D2" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D3" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D4" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D5" style="margin-top:48px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D6" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D7" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+            <select selectType="boardPin" name="D8" style="margin-top:2px;width:80px">${HTMLoptions}</select>
+          </div>
+          `;
+      break;
       case 'NodeMCU_V2':
         HTMLboard += `
           <input type="hidden" name="board" value="NodeMCU_V2" />
@@ -184,7 +208,7 @@ $(function() {
     circuitMessage.messageToSend.circuit["board"] = $("input[name=board]").val();
     circuitMessage.messageToSend.circuit["cycles"] = 1;
     console.log(circuitMessage.messageToSend, JSON.stringify(circuitMessage.messageToSend));
-    
+
     ws.send(JSON.stringify(circuitMessage.messageToSend));
 
     /*
@@ -358,7 +382,7 @@ var MonitorController = function() {
     let chartData = getChartData(str, false);
     let c = 0;
     $.each(chartData, (pinLabel, obj) => {
-      charts[c].dataProvider.push({date: obj[0].date, value: charts[c].dataProvider[charts[c].dataProvider.length-1].value});
+      //charts[c].dataProvider.push({date: obj[0].date, value: charts[c].dataProvider[charts[c].dataProvider.length-1].value});
       $.each(obj, (key, tobj) => {
         //console.log("DSA",this.charts[c].dataProvider[this.charts[c].dataProvider.length-1].ts,tobj.ts )
         //date.setDate(this.charts[c].dataProvider[this.charts[c].dataProvider.length-1].date.getMilliseconds() + tobj.date.getMilliseconds())
