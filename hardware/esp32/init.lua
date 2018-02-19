@@ -31,7 +31,10 @@ ap_cfg = {
 wifi.ap.config(ap_cfg)
 wifi.start()
 
-wifi.ap.on("sta_connected", function(mac, id) print("sta connected") end)
+wifi.ap.on("sta_connected", function(mac, id)
+  print("sta connected")
+  dofile("main.lua")
+end)
 
 --[[
 ip_cfg = {

@@ -81,7 +81,7 @@ function ws.connect(host, port)
   sk:on("connection", function(sck, c)
     print(body)
     sck:send(body)
-    ws.ping_start()
+    --ws.ping_start()
   end)
   
   ws.sock = sk

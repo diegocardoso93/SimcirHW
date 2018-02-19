@@ -21,7 +21,7 @@ function handle_ws_message(str_msg)
         --print(SCH.logger.message)
         SCH.logger:format_message_to_send()
         SCH.ws.send(SCH.logger.message)
-        --SCH.logger:clean()
+        SCH.logger:clean()
       end)
     end
   end

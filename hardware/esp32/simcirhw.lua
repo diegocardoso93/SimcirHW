@@ -43,18 +43,29 @@ function SimcirHW:configure_hw_gpios()
     end
   end
   
+  function get_input_name(label)
+    for k, v in pairs(self.circuit.pin_map) do
+      if v == label then
+        return k
+      end
+    end
+  end
+
+  function update_input(pin, level)
+    print("inp changed", pin, level)
+    local inp_name = get_input_name(HwInterface.get_pin_label(pin))
+    self.state.inputs[inp_name] = gpio.read(pin)
+    self:eval()
+    self:propagate()
+    self:register_log()
+  end
+  
   for k, v in pairs(self.circuit.pin_map) do
     if self.circuit.inputs[k] then
-      
-      function inputChanged()
-        self.state.inputs[k] = inp
-        self:eval()
-        self:propagate()
-        self:register_log()
-      end
-      
-      gpio.trig(HwInterface.get_pin(v), gpio.INTR_UP_DOWN, debounce(inputChanged))
-      
+      local pin_numb = HwInterface.get_pin(v)
+      gpio.config({ gpio={pin_numb}, dir=gpio.IN, pull=gpio.PULL_DOWN })
+      update_input(pin_numb)
+      gpio.trig(pin_numb, gpio.INTR_UP_DOWN, update_input)
     end
     if self.circuit.outputs[k] then
       gpio.config({ gpio={HwInterface.get_pin(v)}, dir=gpio.OUT })

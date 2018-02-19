@@ -1990,6 +1990,7 @@ simcir.$ = function() {
         deviceDef.y = pos.y;
         deviceDef.type = device.deviceDef.type;
         deviceDef.label = device.getLabel();
+        device.config ? deviceDef.config = device.config : '';
         var state = device.getState();
         if (state != null) {
           deviceDef.state = state;
@@ -2052,8 +2053,8 @@ simcir.$ = function() {
                 sendInputs[devIn['label']] = 0;
               } else if (x.type == 'OSC') {
                 sendInputs[devIn['label']] = {};
-                sendInputs[devIn['label']]['timeslices'] = x.timeslices;
-                sendInputs[devIn['label']]['values'] = x.values;
+                sendInputs[devIn['label']]['timeslices'] = x.config.timeslices;
+                sendInputs[devIn['label']]['values'] = x.config.values;
               }
             }
           });

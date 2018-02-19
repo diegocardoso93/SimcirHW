@@ -15,13 +15,15 @@ function Logger:push_state(data)
     _t.inputs[inpk] = inpv
   end
   _t.localtime = tmr.now() -- microseconds
-  
+  if self.data == nil then
+    self.data = {}
+  end
   self.data[#self.data+1] = _t
 end
 
 -- free memmory after cycle
 function Logger:clean()
-  self.data = {}
+  self.data = nil
   --collectgarbage()
 end
 
@@ -55,18 +57,20 @@ template is:
 }
 ]]
 function Logger:format_message_to_send()
-  self.message = {
-    type="datalog",
-    data=self.data
-  }
-  self.message = sjson.encode(self.message)
+  if self.data ~= nil then
+    self.message = {
+      type="datalog",
+      data=self.data
+    }
+    self.message = sjson.encode(self.message)
+  end
 end
 
 function logger:new()
   local self = {}
   setmetatable(self, { __index = Logger})
   
-  self.data = {}
+  self.data = nil
   self.message = {}
   return self
 end

@@ -776,10 +776,9 @@
     var out1 = device.addOutput();
     var timerId = null;
 
-    var arrValues = device.deviceDef.values || [];
-    var arrDelays = device.deviceDef.timeslices || [];
+    var arrValues = device.config ? device.config.values : [];
+    var arrDelays = device.config ? device.config.timeslices : [];
     var osc_dblClickHandler = function(event) {
-
       event.preventDefault();
       event.stopPropagation();
       var title = 'Configuração de OSC ';
@@ -828,7 +827,9 @@
         timerId = window.setInterval(function(slices) {
           slices.map(function(slice) { window.setTimeout(...slice); });
         }, acTime, slices);
-
+        device.config = {};
+        device.config.values = arrValues;
+        device.config.timeslices = arrDelays;
         $dlg.remove();
 
       });

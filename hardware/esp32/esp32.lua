@@ -44,4 +44,12 @@ function Esp32.get_pin(label)
   return Esp32.board.named_pins[label]
 end
 
+function Esp32.get_pin_label(number)
+  for label, numb in pairs(Esp32.board.named_pins) do
+    if numb == number then
+      return label
+    end
+  end
+end
+
 return Esp32
