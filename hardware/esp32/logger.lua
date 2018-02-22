@@ -6,7 +6,6 @@ local logger = {}
 local Logger = {}
 
 function Logger:push_state(data)
-  -- data.timestamp = tmr.get_time()
   _t = {outputs={}, inputs={}, localtime=nil}
   for outk, outv in pairs(data.outputs) do
     _t.outputs[outk] = outv

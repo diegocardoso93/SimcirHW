@@ -14,9 +14,7 @@ local LOGGER_REFRESH_RATE = 2000
 
 function SimcirHW:eval_message(str_msg)
   local message = sjson.decode(str_msg)
-  --if message.type == "circuit" then
-    self.message = message
-  --end
+  self.message = message
 end
 
 function SimcirHW:prepare_circuit(circuit)
@@ -84,7 +82,6 @@ function SimcirHW:configure_fixed_inputs()
   self.sliceTimer:register(MINIMAL_SLICE_SIZE, tmr.ALARM_AUTO, function()
     for k, inp in pairs(self.circuit.inputs) do
       -- virtual input
-      -- quando chegar no time trocar para o proximo
       if type(inp) == "table" then
         local acum_time = 0
         for i, time in ipairs(inp.timeslices) do

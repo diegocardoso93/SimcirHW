@@ -35,20 +35,3 @@ wifi.ap.on("sta_connected", function(mac, id)
   print("sta connected")
   dofile("main.lua")
 end)
-
---[[
-ip_cfg = {
-    ip = "192.168.1.1",
-    netmask = "255.255.255.0",
-    gateway = "192.168.1.1"
-}
-wifi.ap.setip(ip_cfg)
---]]
---dhcp_config = {start = "192.168.1.100"}
---wifi.ap.dhcp.config(dhcp_config)
-
---print("Starting DHCP Service...\n")
---wifi.ap.dhcp.start()
-
-
--- dofile("main.lua")
