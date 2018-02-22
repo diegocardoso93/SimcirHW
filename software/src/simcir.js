@@ -2043,6 +2043,7 @@ simcir.$ = function() {
           }
         });
         var sendInputs = {};
+        var maxtime = 0;
         $.each(arrInputs, function(i, devIn) {
           var to = getDevIdToByFrom(connectors, devIn.id);
           devices.forEach(function (x) {
@@ -2055,6 +2056,13 @@ simcir.$ = function() {
                 sendInputs[devIn['label']] = {};
                 sendInputs[devIn['label']]['timeslices'] = x.config.timeslices;
                 sendInputs[devIn['label']]['values'] = x.config.values;
+                var acum = 0;
+                x.config.timeslices.forEach((t) => {
+                  acum += t;
+                });
+                if (acum > maxtime) {
+                  maxtime = acum;
+                }
               }
             }
           });
@@ -2064,7 +2072,8 @@ simcir.$ = function() {
           'type': 'circuit',
           'circuit': {
             'outputs': sendOutputs,
-            'inputs': sendInputs
+            'inputs': sendInputs,
+            'maxtime': maxtime
           }
         }
 

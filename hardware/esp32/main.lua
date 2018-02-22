@@ -1,7 +1,4 @@
 
---require "circuitlib"
---require "utils"
-
 local SimcirHW = require("simcirhw")
 local ws = require("websocket")
 
@@ -12,6 +9,8 @@ function handle_ws_message(str_msg)
   if SCH.message.type == "circuit" then
     SCH:prepare_circuit(SCH.message.circuit)
     SCH:start()
+  elseif SCH.message.type == "datalog_stop" then
+    SCH:stop()
   end
 end
 
