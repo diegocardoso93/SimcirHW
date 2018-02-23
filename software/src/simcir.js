@@ -2345,7 +2345,7 @@ simcir.$ = function() {
     var validateCircuit = function() {
       var validation = getValidation();
       if (validation.message.length>0) {
-        alert(validation.message);
+        swal(validation.message);
       }
     };
 
