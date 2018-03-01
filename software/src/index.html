@@ -421,11 +421,11 @@ var MonitorController = function() {
       });
     };
 
-    if (first) initime = objData[0].localtime;
+    if (first) initime = objData[0].l;
     $.each(objData, function(k, obj) {
       let newDate = new Date(firstDate);
-      newDate.setMilliseconds(newDate.getMilliseconds() + (obj.localtime - initime)/1000);
-      let _t = $.extend({},obj['inputs'], obj['outputs']);
+      newDate.setMilliseconds(newDate.getMilliseconds() + (obj.l - initime)/1000);
+      let _t = $.extend({},obj['i'], obj['o']);
       console.log(_t)
       $.each(gpios, function(pinLabel) {
         pushPinData(pinLabel , _t[pinLabel], obj, newDate);
