@@ -49,10 +49,12 @@
   <script type="text/javascript" src="simcir-basicset.js"></script>
   <script type="text/javascript" src="misc/simcir-dso.js"></script>
   <script type="text/javascript" src="jquery-ui.js"></script>
+  <script type="text/javascript" src="thirdpart/sweetalert.min.js"></script>
   <script type="text/javascript">
 
 var circuitMessage = {};
 var gpios = {};
+var ws
 $(function() {
 
   $("#tabs").tabs();
@@ -183,7 +185,7 @@ $(function() {
   });
 
   var host = window.document.location.host.replace(/:.*/, '');
-  var ws = new WebSocket('ws://' + host + ':9061');
+  ws = new WebSocket('ws://' + host + ':9061');
   var startMonitor = 0; var stopMonitor = 0;
   var monitorController = MonitorController();
   ws.onmessage = function (event) {
@@ -278,24 +280,6 @@ $('#startRealtimeMonitor').click(function() {
 
   MonitorController().makeCharts();
 
-/*
-  updateMonitorControl = setInterval(function() {
-
-    var chartData = getChartData();
-    var c = 0;
-    $.each(chartData, function(pinLabel, obj) {
-
-      $.each(obj, function(key, tobj) {
-        charts[c].dataProvider.push({
-          date: tobj.date,
-          value: tobj.value
-        });
-      });
-      charts[c].validateData();
-      c++;
-    });
-  }, 1000 );
-  */
 });
 
 var MonitorController = function() {
@@ -305,7 +289,7 @@ var MonitorController = function() {
   function makeCharts(str) {
     let chartData = getChartData(str, true);
     $.each(chartData, (pinLabel, dataProvider) => {
-      console.log("fuck", pinLabel, dataProvider);
+      console.log("chart", pinLabel, dataProvider);
       $('#chartsContainer').append('<div id="chart_' + pinLabel + '"></div>');
 
       let chartConfig = {
@@ -424,7 +408,7 @@ var MonitorController = function() {
     });
 
     let pushPinData = function (pinLabel, pinValue, obj, newDate) {
-      let dtemp = (chartData[pinLabel] && (chartData[pinLabel].length-1)>0) ? 1 : 0;
+      let dtemp = (chartData[pinLabel] && (chartData[pinLabel].length-1)>=0) ? 1 : 0;
       if (dtemp) {
         chartData[pinLabel].push({
           date: newDate,
@@ -437,11 +421,11 @@ var MonitorController = function() {
       });
     };
 
-    if (first) initime = objData[0].localtime;
+    if (first) initime = objData[0].l;
     $.each(objData, function(k, obj) {
       let newDate = new Date(firstDate);
-      newDate.setMilliseconds(newDate.getMilliseconds() + (obj.localtime - initime)/1000);
-      let _t = $.extend({},obj['inputs'], obj['outputs']);
+      newDate.setMilliseconds(newDate.getMilliseconds() + (obj.l - initime)/1000);
+      let _t = $.extend({},obj['i'], obj['o']);
       console.log(_t)
       $.each(gpios, function(pinLabel) {
         pushPinData(pinLabel , _t[pinLabel], obj, newDate);
@@ -460,76 +444,59 @@ var MonitorController = function() {
 
 
 $('#stopRealtimeMonitor').click(function() {
-  clearInterval(updateMonitorControl);
+  ws.send(JSON.stringify(
+    {type: "datalog_stop"}
+  ));
 });
 
   function getTestData() {
     return JSON.parse(`
     [{
-			"localtime": 26945319,
+			"localtime": 160127839,
 			"inputs": {
+				"In2": 0,
+				"In1": 0
+			},
+			"outputs": {
+				"Out1": 0
+			}
+		}, {
+			"localtime": 160220191,
+			"inputs": {
+				"In2": 0,
 				"In1": 1
 			},
 			"outputs": {
-				"Out2": 0,
 				"Out1": 0
 			}
 		}, {
-			"localtime": 27006354,
+			"localtime": 160320854,
 			"inputs": {
-				"In2": 0,
+				"In2": 1,
+				"In1": 0
+			},
+			"outputs": {
+				"Out1": 0
+			}
+		}, {
+			"localtime": 160421000,
+			"inputs": {
+				"In2": 1,
 				"In1": 1
 			},
 			"outputs": {
-				"Out2": 0,
-				"Out1": 0
-			}
-		}, {
-			"localtime": 27111617,
-			"inputs": {
-				"In1": 1,
-				"In2": 0,
-				"In3": 0
-			},
-			"outputs": {
-				"Out2": 1,
 				"Out1": 1
 			}
 		}, {
-			"localtime": 27205667,
+			"localtime": 160520686,
 			"inputs": {
-				"In1": 1,
-				"In2": 0,
-				"In3": 1
+				"In2": 1,
+				"In1": 1
 			},
 			"outputs": {
-				"Out2": 0,
-				"Out1": 0
-			}
-		}, {
-			"localtime": 27404104,
-			"inputs": {
-				"In1": 1,
-				"In2": 0,
-				"In3": 0
-			},
-			"outputs": {
-				"Out2": 1,
 				"Out1": 1
 			}
-		}, {
-			"localtime": 27506277,
-			"inputs": {
-				"In1": 1,
-				"In2": 0,
-				"In3": 1
-			},
-			"outputs": {
-				"Out2": 0,
-				"Out1": 0
-			}
-		}
-	]`);
+		}]`);
   }
 
   </script>

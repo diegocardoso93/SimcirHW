@@ -23,6 +23,43 @@ if (serve) {
 
 function createWindow() {
 
+  var WiFiControl = require('wifi-control');
+
+var Connected = new Promise(function(resolve, reject) {
+
+  WiFiControl.init({
+    debug: true,
+    connectionTimeout: 5000
+  });
+
+  WiFiControl.scanForWiFi(function (err, response) {
+    if (err) {
+      //@todo: se wifi estiver desativada, exibir mensagem apropriada
+      console.log(err);
+    }
+    console.log(response);
+    var find = false;
+    response['networks'].forEach((network) => {
+      if (network.ssid == 'SimcirHW') {
+        WiFiControl.connectToAP({
+          ssid: 'SimcirHW',
+          password: 'unisc123'
+        }, function (err, response) {
+          if (err) console.log(err);
+          console.log(response);
+          resolve();
+        });
+        find = true;
+      }
+    });
+    if (!find) {
+      //@TODO comunicar para aplicacao para conectar
+    }
+  });
+
+});
+
+Connected.then(() => {
   appServer.startServer();
   Menu.setApplicationMenu(Menu.buildFromTemplate(appMenu));
 
@@ -88,6 +125,9 @@ function createWindow() {
   mainWindow.on('closed', function () {
     mainWindow = null;
   })
+
+});
+
 }
 
 app.on('ready', createWindow);
