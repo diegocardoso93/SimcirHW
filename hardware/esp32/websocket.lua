@@ -153,9 +153,12 @@ function ws.decode_frame(frame)
 
 end
 
-function ws.send(data)
+function ws.send(data, ondata_sent_callback)
   
-  print("Websocket doing send. data:", data)
+  if ondata_sent_callback == nil then ondata_sent_callback = function() end end
+  
+  --print("Websocket doing send. data:", data)
+  print("send " .. tmr.now())
   
   if ws.is_conn == false then 
     print("Websocket not connected, so cannot send.")
@@ -177,7 +180,7 @@ function ws.send(data)
   binstr = binstr .. string.char(0x0,0x0,0x0,0x0)
   binstr = binstr .. data
 
-  ws.sock:send(binstr)  
+  ws.sock:send(binstr, ondata_sent_callback)
 end 
 
 function ws.ping_start()

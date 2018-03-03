@@ -1,10 +1,6 @@
 
---require "circuitlib"
---require "utils"
-
 local SimcirHW = require("simcirhw")
-local LOGGER_REFRESH_RATE = 3000
-local loggerTimer = nil
+local ws = require("websocket")
 
 function handle_ws_message(str_msg)
   print("msg received: " .. str_msg)
@@ -13,15 +9,8 @@ function handle_ws_message(str_msg)
   if SCH.message.type == "circuit" then
     SCH:prepare_circuit(SCH.message.circuit)
     SCH:start()
-    
-    if #SCH.timer_slices == 0 and loggerTimer == nil then
-      loggerTimer = tmr.create():alarm(LOGGER_REFRESH_RATE, tmr.ALARM_AUTO, function()
-        --print(SCH.logger.message)
-        SCH.logger:format_message_to_send()
-        SCH.ws:send(SCH.logger.message)
-        --SCH.logger:clean()
-      end)
-    end
+  elseif SCH.message.type == "datalog_stop" then
+    SCH:stop()
   end
 end
 

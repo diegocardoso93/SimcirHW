@@ -9,12 +9,12 @@ local SimcirHW = {}
 local HwInterface = {}
 
 local sjson = require "json"
+local MINIMAL_SLICE_SIZE = 100
+local LOGGER_REFRESH_RATE = 100
 
 function SimcirHW:eval_message(str_msg)
   local message = sjson.decode(str_msg)
-  if message.type == "circuit" then
-    self.message = message
-  end
+  self.message = message
 end
 
 function SimcirHW:prepare_circuit(circuit)
@@ -29,11 +29,12 @@ function SimcirHW:prepare_circuit(circuit)
 end
 
 function SimcirHW:configure_hw_gpios()
-  
+
+  -- is this necessary?
   function debounce(func)
     local last = 0
     local delay = 5000
-    
+
     return function(...)
       local now = tmr.now()
       if now - last < delay then return end
@@ -42,7 +43,7 @@ function SimcirHW:configure_hw_gpios()
       return func(...)
     end
   end
-  
+
   function get_input_name(label)
     for k, v in pairs(self.circuit.pin_map) do
       if v == label then
@@ -59,13 +60,13 @@ function SimcirHW:configure_hw_gpios()
     self:propagate()
     self:register_log()
   end
-  
+
   for k, v in pairs(self.circuit.pin_map) do
     if self.circuit.inputs[k] then
-      local pin_numb = HwInterface.get_pin(v)
-      gpio.config({ gpio={pin_numb}, dir=gpio.IN, pull=gpio.PULL_DOWN })
-      update_input(pin_numb)
-      gpio.trig(pin_numb, gpio.INTR_UP_DOWN, update_input)
+      --local pin_numb = HwInterface.get_pin(v)
+      gpio.config({ gpio={HwInterface.get_pin(v)}, dir=gpio.IN, pull=gpio.PULL_DOWN })
+      --update_input(pin_numb)
+      --gpio.trig(pin_numb, gpio.INTR_UP_DOWN, update_input)
     end
     if self.circuit.outputs[k] then
       gpio.config({ gpio={HwInterface.get_pin(v)}, dir=gpio.OUT })
@@ -73,38 +74,53 @@ function SimcirHW:configure_hw_gpios()
   end
 end
 
-function SimcirHW:configure_inputs()
-  for k, inp in pairs(self.circuit.inputs) do
-    -- virtual input
-    if type(inp) == "table" then
-      local acc_time = 100
-      inp.timeslices[#inp.timeslices+1] = inp.timeslices[#inp.timeslices]
-      inp.values[#inp.values+1] = inp.values[#inp.values]
-      for i, time in ipairs(inp.timeslices) do
-        local t_tmr = tmr.create()
-        t_tmr:register(acc_time, tmr.ALARM_SINGLE, 
-          function (t)
-            self.state.inputs[k] = inp.values[i]
-            self:eval()
-            self:propagate()
-            self:register_log()
-            t:unregister()
-            if i == #inp.values then
-              self.logger:format_message_to_send()
-              self.ws.send(self.logger.message)
-            end
-          end)
-        acc_time = acc_time + time
-        self.timer_slices[#self.timer_slices+1] = t_tmr
-      end
-    elseif self.circuit.pin_map[k] == nil then
-      -- fixed input value
-      self.state.inputs[k] = inp
-      self:eval()
-      self:propagate()
-      self:register_log()
-    end
+function SimcirHW:configure_fixed_inputs()
+  if self.circuit.maxtime > 0 then
+    LOGGER_REFRESH_RATE = self.circuit.maxtime
   end
+  self.sliceTimer = tmr.create()
+  self.sliceTimer:register(MINIMAL_SLICE_SIZE, tmr.ALARM_AUTO, function()
+    print(tmr.now())
+    for k, inp in pairs(self.circuit.inputs) do
+      -- virtual input
+      if type(inp) == "table" then
+        local acum_time = 0
+        for i, time in ipairs(inp.timeslices) do
+          if acum_time == self.slice_timer_counter then
+            self.state.inputs[k] = inp.values[i]
+          end
+          acum_time = acum_time + time
+        end
+      elseif self.circuit.pin_map[k] == nil then
+        -- fixed input value
+        self.state.inputs[k] = inp
+      else
+        -- read pin
+        self.state.inputs[k] = gpio.read(HwInterface.get_pin(self.circuit.pin_map[k]))
+      end
+    end
+    self:eval()
+    self:propagate()
+    self:register_log()
+
+    if self.slice_timer_counter == LOGGER_REFRESH_RATE then
+      self.sliceTimer:stop()
+      print(SCH.logger.message)
+      SCH.logger:format_message_to_send()
+      SCH.ws.send(SCH.logger.message, function() 
+        print("sent " .. tmr.now())
+        self.sliceTimer:start()
+      end)
+      SCH.logger:clean()
+      self.slice_timer_counter = 0
+      if self.circuit.maxtime > 0 then
+        self.sliceTimer:stop()
+        self.sliceTimer:unregister()
+      end
+    else
+      self.slice_timer_counter = self.slice_timer_counter + MINIMAL_SLICE_SIZE
+    end
+  end)
 end
 
 function SimcirHW:eval()
@@ -135,24 +151,21 @@ end
 function SimcirHW:start()
   print("call start")
   self:configure_hw_gpios()
-  self:configure_inputs()
-  self:execute()
-end
-
-function SimcirHW:execute()
+  self:configure_fixed_inputs()
   self:propagate()
-  for i = 1, self.circuit.cycles, 1 do
-    for _, t in ipairs(self.timer_slices) do
-      t:start()
-    end
-  end
+  --self:execute()
+  self.sliceTimer:start()
 end
 
 function SimcirHW:stop()
+  node.restart()
 end
 
 function SimcirHW:destroy()
-  self.ws = nil
+  if self.sliceTimer then
+    self.sliceTimer:stop()
+    self.sliceTimer:unregister()
+  end
   self = nil
   collectgarbage()
 end
@@ -172,17 +185,19 @@ function simcirhw:new()
     pin_map  = {},
     hardware = {},
     cycles   = {},
+    maxtime  = {}
   }
   self.state = {
     outputs = {},
     inputs  = {}
   }
   self.expressions = {}
-  self.timer_slices = {}
   
   self.logger = Logger:new()
   self.ws = {}
-  
+  self.slice_timer = nil
+  self.slice_timer_counter = 0
+
   return self
 end
 

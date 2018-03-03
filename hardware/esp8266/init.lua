@@ -46,10 +46,9 @@ wifi.ap.dhcp.start()
 
 wifi.eventmon.register(wifi.eventmon.AP_STACONNECTED, function(T)
     print("\n\tAP: Station connected. \n\tMAC: " .. T.MAC .. "\n\tAID: " .. T.AID)
+    -- dofile("main.lua")
 end)
 
 wifi.eventmon.register(wifi.eventmon.AP_STADISCONNECTED, function(T)
     print("\n\tAP: Station disconnected. \n\tMAC: " .. T.MAC .. "\n\tAID: " .. T.AID)
 end)
-
--- dofile("main.lua")

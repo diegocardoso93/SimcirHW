@@ -6,15 +6,14 @@ local logger = {}
 local Logger = {}
 
 function Logger:push_state(data)
-  -- data.timestamp = tmr.get_time()
-  _t = {outputs={}, inputs={}, localtime=nil}
+  _t = {o={}, i={}, l=nil}
   for outk, outv in pairs(data.outputs) do
-    _t.outputs[outk] = outv
+    _t.o[outk] = outv
   end
   for inpk, inpv in pairs(data.inputs) do
-    _t.inputs[inpk] = inpv
+    _t.i[inpk] = inpv
   end
-  _t.localtime = tmr.now() -- microseconds
+  _t.l = tmr.now() -- microseconds
   if self.data == nil then
     self.data = {}
   end
