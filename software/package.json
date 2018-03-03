@@ -14,7 +14,9 @@
     "electron:mac": "npm run build && electron-packager dist --overwrite --platform=darwin --arch=x64 --asar=true --out=app-builds --electron-version=1.7.10"
   },
   "dependencies": {
+    "aedes": "^0.33.0",
     "express": "4.16.2",
+    "net": "^1.0.2",
     "wifi-control": "^2.0.1",
     "ws": "4.0.0"
   },

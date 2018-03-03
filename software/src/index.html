@@ -50,6 +50,7 @@
   <script type="text/javascript" src="misc/simcir-dso.js"></script>
   <script type="text/javascript" src="jquery-ui.js"></script>
   <script type="text/javascript" src="thirdpart/sweetalert.min.js"></script>
+  <script type="text/javascript" src="thirdpart/mqtt.min.js"></script>
   <script type="text/javascript">
 
 var circuitMessage = {};
@@ -184,8 +185,10 @@ $(function() {
     $("#boardArea").html(HTMLboard);
   });
 
+
   var host = window.document.location.host.replace(/:.*/, '');
-  ws = new WebSocket('ws://' + host + ':9061');
+
+  ws = new WebSocket('ws://' + host + ':9062');
   var startMonitor = 0; var stopMonitor = 0;
   var monitorController = MonitorController();
   ws.onmessage = function (event) {
