@@ -4,7 +4,7 @@
 -- https://github.com/nodemcu/nodemcu-firmware
 -- branch: master
 -- commit: 2e67ff5a639a13260fd4fb3c3b627ccdc2845616
--- modules: file,gpio,net,node,tmr,uart,websocket,wifi
+-- modules: file,gpio,node,tmr,uart,websocket,wifi,sjson
 -- powered by Lua 5.1.4
 
 print("\n UNISC \n")
@@ -45,10 +45,12 @@ print("Starting DHCP Service...\n")
 wifi.ap.dhcp.start()
 
 wifi.eventmon.register(wifi.eventmon.AP_STACONNECTED, function(T)
-    print("\n\tAP: Station connected. \n\tMAC: " .. T.MAC .. "\n\tAID: " .. T.AID)
-    -- dofile("main.lua")
+  print("\n\tAP: Station connected. \n\tMAC: " .. T.MAC .. "\n\tAID: " .. T.AID)
+  tmr.create():alarm(6000, tmr.ALARM_SINGLE, function()
+    dofile("main.lua")
+  end)
 end)
 
 wifi.eventmon.register(wifi.eventmon.AP_STADISCONNECTED, function(T)
-    print("\n\tAP: Station disconnected. \n\tMAC: " .. T.MAC .. "\n\tAID: " .. T.AID)
+  print("\n\tAP: Station disconnected. \n\tMAC: " .. T.MAC .. "\n\tAID: " .. T.AID)
 end)

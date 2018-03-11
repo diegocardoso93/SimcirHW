@@ -69,8 +69,11 @@ function SimcirHW:configure_inputs()
 
     if self.slice_timer_counter == LOGGER_REFRESH_RATE then
       self.sliceTimer:stop()
+      print("format", tmr.now())
       SCH.logger:format_message_to_send()
+      print("send", tmr.now())
       SCH.ws:send(SCH.logger.message)
+      print("sent", tmr.now())
       self.sliceTimer:start()
       SCH.logger:clean()
       self.slice_timer_counter = 0
@@ -111,6 +114,7 @@ end
 
 function SimcirHW:start()
   print("call start")
+  self.executing = true
   self:configure_hw_gpios()
   self:configure_inputs()
   self:propagate()
@@ -167,6 +171,7 @@ function simcirhw:new()
   self.ws = {}
   self.slice_timer = nil
   self.slice_timer_counter = 0
+  self.executing = false
 
   return self
 end

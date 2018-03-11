@@ -23,44 +23,6 @@ if (serve) {
 
 function createWindow() {
 
-  var WiFiControl = require('wifi-control');
-
-var Connected = new Promise(function(resolve, reject) {
-
-  WiFiControl.init({
-    debug: true,
-    connectionTimeout: 5000
-  });
-
-  WiFiControl.scanForWiFi(function (err, response) {
-    if (err) {
-      //@todo: se wifi estiver desativada, exibir mensagem apropriada
-      console.log(err);
-    }
-    console.log(response);
-    var find = false;
-    response['networks'].forEach((network) => {
-      if (network.ssid == 'SimcirHW') {
-        WiFiControl.connectToAP({
-          ssid: 'SimcirHW',
-          password: 'unisc123'
-        }, function (err, response) {
-          if (err) console.log(err);
-          console.log(response);
-          resolve();
-        });
-        find = true;
-      }
-    });
-    if (!find) {
-      //@TODO comunicar para aplicacao para conectar
-    }
-  });
-
-});
-
-Connected.then(() => {
-  appServer.startServer();
   Menu.setApplicationMenu(Menu.buildFromTemplate(appMenu));
 
   let width = 1200, height = 860;
@@ -97,7 +59,13 @@ Connected.then(() => {
     (filename) => console.log(filename)
   );*/
 
-  mainWindow.loadURL('http://localhost:9061');
+  //mainWindow.loadURL('http://localhost:9061');
+
+  mainWindow.loadURL(url.format({
+    pathname: path.join(__dirname, 'index.html'),
+    protocol: 'file:',
+    slashes: true
+  }))
 
   if (serve) {
     mainWindow.webContents.openDevTools();
@@ -120,13 +88,58 @@ Connected.then(() => {
       });
     });
     */
+    let WiFiControl = require('wifi-control');
+
+    WiFiControl.init({
+      debug: true,
+      connectionTimeout: 5000
+    });
+
+    const WebSocket = require('ws');
+    const express = require('express');
+    const path = require('path');
+    const app = express();
+    const server = require('http').createServer();
+
+    mainWindow.webContents.send('request', 'ipcStart');
+    ipcMain.on('response', (event, arg) => {
+      if (arg['reason'] === 'checkWifi') {
+        let ifaceState = WiFiControl.getIfaceState();
+        let connected = false;
+        if (ifaceState['ssid'] === 'SimcirHW') {
+          //appServer.startServer();
+
+          app.use(express.static(path.join(__dirname, '/')));
+
+          const wss = new WebSocket.Server({server: server});
+
+          wss.on('connection', (ws) => {
+            mainWindow.webContents.send('apReady', 'ok');
+            ws.on('message', (data) => {
+              wss.clients.forEach((client) => {
+                if (client !== ws && client.readyState === WebSocket.OPEN) {
+                  client.send(data);
+                }
+              });
+            });
+          });
+
+          server.on('request', app);
+          server.listen(9061, function () {
+            console.log('Listening on http://localhost:9061');
+          });
+
+
+          connected = true;
+        }
+        event.sender.send('checkWifi', {connected: connected});
+      }
+    });
   });
 
   mainWindow.on('closed', function () {
     mainWindow = null;
   })
-
-});
 
 }
 
