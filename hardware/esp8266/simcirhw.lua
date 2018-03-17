@@ -94,6 +94,7 @@ function SimcirHW:eval()
     str_exec = str_exec .. k .. " = " .. v .. ";"
   end
   for out, exp in pairs(self.expressions) do
+    print("dbg > ", exp, str_exec, tmr.now())
     self.state.outputs[out] = loadstring(str_exec .. "return " .. exp)()
   end
 end
@@ -107,7 +108,9 @@ function SimcirHW:get_expression(out)
 end
 
 function SimcirHW:propagate()
+  print('zzz', tmr.now())
   for k, v in pairs(self.state.outputs) do
+    print('d :', self.circuit.pin_map[k], k, v, tmr.now())
     gpio.write(HwInterface.get_pin(self.circuit.pin_map[k]), v)
   end
 end

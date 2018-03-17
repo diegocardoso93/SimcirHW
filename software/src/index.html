@@ -198,7 +198,7 @@ $(function() {
 
 
   function sendCircuit() {
-    $('#sendBtn').hide();
+    //$('#sendBtn').hide();
     reqIpcRef.sender.send('response', { reason: 'checkWifi' });
     ipc.on('checkWifi', (emitter, data) => {
       if (!data['connected']) {
