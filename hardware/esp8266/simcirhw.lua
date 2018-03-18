@@ -2,7 +2,7 @@
 require "circuitlib"
 --require "nodemcu_fakelibs" -- gpio, tmr fake libs (disable in real hw)
 
-local Logger = require "logger"
+--local Logger = require "logger"
 
 local simcirhw = {}
 local SimcirHW = {}
@@ -45,17 +45,20 @@ function SimcirHW:configure_inputs()
     self.sliceTimer = tmr.create()
     self.sliceTimer:register(MINIMAL_SLICE_SIZE, tmr.ALARM_AUTO, function()
       if type(self.state[self.actual_step]) == "table" then
+        self.state[self.actual_step].l = tmr.now()
         self:propagate()
+        --self:register_log()
       end
-      --self:register_log()
-      --print("format", tmr.now())
-      --SCH.logger:format_message_to_send()
-      --print("send", tmr.now())
-      --SCH.ws:send(SCH.logger.message)
-      --print("sent", tmr.now())
-      --SCH.logger:clean()
-      
-      if self.actual_step == self.steps-1 then
+      print("step", self.actual_step);
+      if self.actual_step == self.steps then
+        local tmessage = self:format_message_to_send()
+        SCH.ws:send(tmessage)
+        --print("format", tmr.now())
+        --SCH.logger:format_message_to_send()
+        --print("send", tmr.now())
+        --SCH.ws:send(SCH.logger.message)
+        --print("sent", tmr.now())
+        --SCH.logger:clean()
         self.sliceTimer:stop()
         if self.circuit.maxtime > 0 then
           self.sliceTimer:stop()
@@ -64,6 +67,40 @@ function SimcirHW:configure_inputs()
       end
       self.actual_step = self.actual_step + 1
     end)
+  else
+    self.sliceTimer = tmr.create()
+    self.sliceTimer:register(MINIMAL_SLICE_SIZE, tmr.ALARM_AUTO, function()
+      self.state[self.actual_step] = {i={}, o={}, l=nil}
+      self.state[self.actual_step].l = tmr.now()
+      for k, inp in pairs(self.circuit.inputs) do
+        self.state[self.actual_step].i[k] = gpio.read(HwInterface.get_pin(self.circuit.pin_map[k]))
+      end
+      self:eval()
+      self:propagate()
+      local tmessage = self:format_message_to_send()
+      SCH.ws:send(tmessage)
+    end)
+  end
+end
+
+function SimcirHW:eval()
+  -- loadscope
+  local str_exec = ""
+  for k, v in pairs(self.state[self.actual_step].i) do
+    str_exec = str_exec .. k .. " = " .. v .. ";"
+  end
+  for out, exp in pairs(self.expressions) do
+    self.state[self.actual_step].o[out] = loadstring(str_exec .. "return " .. exp)()
+  end
+end
+
+function SimcirHW:format_message_to_send()
+  if self.state ~= nil then
+    local message = {
+      type="datalog",
+      data=self.state
+    }
+    return sjson.encode(message)
   end
 end
 
@@ -77,7 +114,7 @@ end
 
 function SimcirHW:propagate()
   print('zzz', tmr.now())
-  for k, v in pairs(self.state[self.actual_step].outputs) do
+  for k, v in pairs(self.state[self.actual_step].o) do
     print('d :', self.circuit.pin_map[k], k, v, tmr.now())
     gpio.write(HwInterface.get_pin(self.circuit.pin_map[k]), v)
   end
@@ -89,7 +126,7 @@ function SimcirHW:start()
   self.executing = true
   self:configure_hw_gpios()
   self:configure_inputs()
-  self:propagate()
+  --self:propagate()
   --self:execute()
   self.sliceTimer:start()
 end
@@ -97,42 +134,47 @@ end
 function SimcirHW:generate_lookup()
   if (self.circuit.maxtime > 0) then
     local t_slice_timer_counter = 0
-    while (t_slice_timer_counter < self.circuit.maxtime) do
+    while (t_slice_timer_counter <= self.circuit.maxtime) do
       local find = false
       for k, inp in pairs(self.circuit.inputs) do
         -- virtual input
         if type(inp) == "table" then
           local acum_time = 0
+          if inp.timeslices[#inp.timeslices] ~= 0 then inp.timeslices[#inp.timeslices+1] = 0 end
           for i, time in ipairs(inp.timeslices) do
             if acum_time == t_slice_timer_counter then
               ind = (t_slice_timer_counter/100) + 1
-              if self.state[ind] == nil then self.state[ind] = {inputs={}, outputs={}} end
-              self.state[ind].inputs[k] = inp.values[i]
+              if self.state[ind] == nil then self.state[ind] = {i={}, o={}} end
+              self.state[ind].i[k] = inp.values[i]
               find = true
             end
             acum_time = acum_time + time
           end
         elseif self.circuit.pin_map[k] == nil then
           -- fixed input value
-          if ind ~= nil then ind = ind else ind = 1 end
-          if self.state[ind] == nil then self.state[ind] = {inputs={}, outputs={}} end
-          self.state[ind].inputs[k] = inp
+          if ind ~= nil then ind = 1 end
+          if self.state[ind] == nil then self.state[ind] = {i={}, o={}} end
+          self.state[ind].i[k] = inp
         end
       end
 
       if find then
+        for k, _ in pairs(self.circuit.inputs) do
+          if self.state[ind].i[k] == nil then self.state[ind].i[k] = self.state[last].i[k] end
+        end
+        last = ind
         local str_exec = ""
-        for k, v in pairs(self.state[ind].inputs) do
+        for k, v in pairs(self.state[ind].i) do
           str_exec = str_exec .. k .. " = " .. v .. ";"
         end
-
         for out, exp in pairs(self.expressions) do
-          print("dbg > ", exp, str_exec, tmr.now())
-          self.state[ind].outputs[out] = loadstring(str_exec .. "return " .. exp)()
+          --print("dbg > ", exp, str_exec, tmr.now())
+          self.state[ind].o[out] = loadstring(str_exec .. "return " .. exp)()
         end
       end
       t_slice_timer_counter = t_slice_timer_counter + MINIMAL_SLICE_SIZE
       self.steps = self.steps + 1
+      if self.steps%40 == 0 then tmr.wdclr() end -- manually feed watchdog
     end
   end
 end
@@ -179,7 +221,7 @@ function simcirhw:new()
   self.state = {}
   self.expressions = {}
   
-  self.logger = Logger:new()
+  --self.logger = Logger:new()
   self.ws = {}
   self.slice_timer = nil
   self.slice_timer_counter = 0
