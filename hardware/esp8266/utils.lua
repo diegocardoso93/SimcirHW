@@ -1,10 +1,4 @@
 
-print(tmr.now())
-
-gpio.write(0, gpio.LOW)
-
-print(tmr.now())
-
-gpio.write(0, gpio.HIGH)
-
-print(tmr.now())
+t = {}
+t[1] = 10
+print(t,t[1])
