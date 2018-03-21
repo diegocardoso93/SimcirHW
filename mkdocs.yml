@@ -24,11 +24,11 @@ pages:
 - 'Início': '00_00inicio.md'
 - Manual:
     - 'Início': '00_01primeiros-passos.md'
-    - 'Instalação': 'instalacao.md'
+    - 'Instalação': '00_02instalacao.md'
 - Documentação:
     - Home: 'index.md'
     - FAQs:
-        - Lua Developer FAQ: 'en/lua-developer-faq.md'
-        - Extension Developer FAQ: 'en/extn-developer-faq.md'
-        - Hardware FAQ: 'en/hardware-faq.md'
-    - Support: 'support.md'
+        - Lua Developer FAQ: '00_02instalacao.md'
+        - Extension Developer FAQ: '00_02instalacao.md'
+        - Hardware FAQ: '00_02instalacao.md'
+    - Support: '00_02instalacao.md'
