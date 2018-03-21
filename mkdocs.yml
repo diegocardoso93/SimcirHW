@@ -1,4 +1,4 @@
-site_name: SimcirHW - Manual e Documentação
+site_name: SimcirHW - Documentação
 site_description: SimcirJS com integração com hardware baseado na tecnologia NodeMCU.
 repo_url: https://github.com/diegocardoso93/SimcirHW
 
@@ -21,14 +21,9 @@ markdown_extensions:
 site_favicon: img/favicon.png
 
 pages:
-- 'Início': '00_00inicio.md'
-- Manual:
-    - 'Início': '00_01primeiros-passos.md'
-    - 'Instalação': '00_02instalacao.md'
+- 'Início': '00inicio.md'
+- Tutorial:
+    - 'Início': '10requisitos.md'
+    - 'Instalação': '11instalacao.md'
 - Documentação:
-    - Home: 'index.md'
-    - FAQs:
-        - Lua Developer FAQ: '00_02instalacao.md'
-        - Extension Developer FAQ: '00_02instalacao.md'
-        - Hardware FAQ: '00_02instalacao.md'
-    - Support: '00_02instalacao.md'
+    - Home: 'blank.md'
