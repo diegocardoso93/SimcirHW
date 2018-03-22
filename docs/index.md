@@ -15,7 +15,10 @@ O firmware utilizado neste projeto é o eLua NodeMCU.
 
 ## Por onde começar
 * Se você procura por instruções sobre como começar a utilizar este projeto para a prática de circuitos digitais,
-vá para [Tutorial]() no menu ao lado.
+vá para [Guia de Instruções]() no menu ao lado. 
+
+* Se você deseja praticar um exemplo de circuito com passo à passo,
+acesse o item [Tutorial]() ao lado. 
 
 * Se você busca contribuir de alguma forma com o desenvolvimento do projeto,
 acesse o item [Documentação]() ao lado.
