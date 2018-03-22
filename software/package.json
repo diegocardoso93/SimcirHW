@@ -5,13 +5,13 @@
   "homepage": "",
   "main": "app-main.js",
   "scripts": {
-    "install": "npm rebuild --runtime=electron --target=1.7.10 --disturl=https://atom.io/download/atom-shell --build-from-source",
+    "install": "npm rebuild --runtime=electron --target=1.8.4 --disturl=https://atom.io/download/atom-shell --build-from-source",
     "build": "copyfiles -f ./src/* dist",
     "electron:serve": "electron ./src/app-main.js --serve",
     "electron:dist": "npm run build && electron dist/app-main.js",
-    "electron:linux": "npm run build && electron-packager dist --overwrite --platform=linux --arch=x64 --asar=true  --out=app-builds --electron-version=1.7.10",
-    "electron:windows": "npm run build && electron-packager dist --overwrite --platform=win32 --arch=x64 --asar=true --out=app-builds --electron-version=1.7.10",
-    "electron:mac": "npm run build && electron-packager dist --overwrite --platform=darwin --arch=x64 --asar=true --out=app-builds --electron-version=1.7.10"
+    "electron:linux": "npm run build && electron-packager dist --overwrite --platform=linux --arch=x64 --asar  --out=app-builds --electron-version=1.8.4",
+    "electron:windows": "npm run build && electron-packager dist --overwrite --platform=win32 --arch=x64 --asar --out=app-builds --electron-version=1.8.4",
+    "electron:mac": "npm run build && electron-packager dist --overwrite --platform=darwin --arch=x64 --asar --out=app-builds --electron-version=1.8.4"
   },
   "dependencies": {
     "express": "4.16.2",
