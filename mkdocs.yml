@@ -21,11 +21,11 @@ markdown_extensions:
 site_favicon: img/favicon.png
 
 pages:
-- Início: 'pt_BR/00inicio.md'
-- Guia de Instruções:
+- 'Início': 'index.md'
+- 'Guia de Instruções':
     - 'Início': 'pt_BR/10requisitos.md'
     - 'Instalação': 'pt_BR/11instalacao.md'
 - Tutorial:
-    - Início: 'pt_BR/blank.md'
-- Documentação:
-    - Início: 'pt_BR/blank.md'
+    - 'Início': 'pt_BR/blank.md'
+- 'Documentação':
+    - 'Início': 'pt_BR/blank.md'
