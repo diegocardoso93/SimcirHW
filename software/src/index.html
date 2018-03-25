@@ -4,17 +4,21 @@
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
     <link rel="stylesheet" type="text/css" href="simcir.css" />
     <link rel="stylesheet" type="text/css" href="simcir-basicset.css" />
-  <link rel="stylesheet" href="jquery-ui.css">
-  <title>SimcirHW</title>
+    <link rel="stylesheet" type="text/css" href="tabs.css" />
+    <title>SimcirHW</title>
   </head>
   <body>
-  <div id="tabs">
-    <ul>
-      <li><a href="#tabs-1">Circuito</a></li>
-      <li><a href="#tabs-2">Mapeamento de pinos</a></li>
-      <li id="link_tab_monitor"><a href="#tabs-3">Monitor de execução</a></li>
-    </ul>
-    <div id="tabs-1">
+    <main>
+      <input id="tab1" type="radio" name="tabs" checked>
+      <label for="tab1">Circuito</label>
+
+      <input id="tab2" type="radio" name="tabs">
+      <label for="tab2">Mapeamento de pinos</label>
+
+      <input id="tab3" type="radio" name="tabs">
+      <label for="tab3">Monitor de execução</label>
+
+      <section id="content1">
         <div id="mySimcir"></div>
         <div>
           <button id="getDataBtn">v get data v</button>
@@ -22,51 +26,49 @@
           <button id="validateBtn">validate</button>
         </div>
         <textarea id="dataArea" style="width:600px; height:200px;"></textarea>
-    </div>
-    <div id="tabs-2">
-      <select id="boardSelector">
-        <option>selecione uma placa</option>
-        <option value="NodeMCU_ESP32S">NodeMCU ESP-32S WiFi ESP32</option>
-        <option value="NodeMCU_V2">NodeMCU ESP-12 WiFi ESP8266</option>
-        <option value="Wemos_D1">WeMos D1 R1 Wifi ESP8266</option>
-      </select>
-      <div id="boardArea" style="display:inline-block;margin-top:20px;"></div>
-      <button id="sendBtn">send ckt</button>
-    </div>
-    <div id="tabs-3">
-      <button id="startRealtimeMonitor">start</button>
-      <button id="stopRealtimeMonitor">stop</button>
-      <div id="chartsContainer"></div>
-    </div>
-  </div>
-    
-    
-  <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
-  <script type="text/javascript" src="jquery-3.2.1.min.js"></script>
-  <script type="text/javascript" src="lang/ptbr.js"></script>
-  <script type="text/javascript" src="circuit-parser.js"></script>
-  <script type="text/javascript" src="simcir.js"></script>
-  <script type="text/javascript" src="simcir-basicset.js"></script>
-  <script type="text/javascript" src="misc/simcir-dso.js"></script>
-  <script type="text/javascript" src="jquery-ui.js"></script>
-  <script type="text/javascript" src="thirdpart/sweetalert.min.js"></script>
-  <script type="text/javascript">
+      </section>
 
-    const ipc = require('electron').ipcRenderer;
-    //console.log(ipc);
-    var reqIpcRef;
-    ipc.on('request', function (req, port) {
-      console.log(req, port, 'ipcStarted');
-      reqIpcRef = req;
-    });
+      <section id="content2">
+        <select id="boardSelector" style="display:inherit">
+          <option>selecione uma placa</option>
+          <option value="NodeMCU_V2">NodeMCU ESP-12 WiFi ESP8266</option>
+          <option value="NodeMCU_ESP32S">NodeMCU ESP-32S WiFi ESP32</option>
+          <option value="Wemos_D1">WeMos D1 R1 Wifi ESP8266</option>
+        </select>
+        <div id="boardArea" style="display:inline-block;margin-top:20px;"></div>
+        <button id="sendBtn">send ckt</button>
+      </section>
+
+      <section id="content3">
+        <button id="startRealtimeMonitor">start</button>
+        <button id="stopRealtimeMonitor">stop</button>
+        <div id="chartsContainer"></div>
+      </section>
+    </main>
+
+<script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+<script type="text/javascript" src="jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="lang/ptbr.js"></script>
+<script type="text/javascript" src="circuit-parser.js"></script>
+<script type="text/javascript" src="simcir.js"></script>
+<script type="text/javascript" src="simcir-basicset.js"></script>
+<script type="text/javascript" src="misc/simcir-dso.js"></script>
+<script type="text/javascript" src="thirdpart/sweetalert.min.js"></script>
+<script type="text/javascript" src="simcirhw-boards.js"></script>
+<script type="text/javascript">
+
+  const ipc = require('electron').ipcRenderer;
+  var reqIpcRef;
+  ipc.on('request', function (req, port) {
+    console.log(req, port, 'ipcStarted');
+    reqIpcRef = req;
+  });
 
 
 var circuitMessage = {};
 var gpios = {};
 var ws
 $(function() {
-
-  $("#tabs").tabs();
 
   var $s = simcir;
 
@@ -102,94 +104,7 @@ $(function() {
     var HTMLboard = "";
     circuitMessage = $s.controller($simcir.find('.simcir-workspace')).getCircuitMessage();
     gpios = $.extend({},circuitMessage.messageToSend.circuit.inputs, circuitMessage.messageToSend.circuit.outputs);
-    var HTMLoptions = '<option></option>';
-    $.each(gpios, function(k, v) {
-      HTMLoptions += '<option>' + k + '</option>';
-    });
-    switch ($(this).val()){
-      case 'NodeMCU_ESP32S':
-        HTMLboard += `
-          <input type="hidden" name="board" value="NodeMCU_ESP32S" />
-          <input type="hidden" name="hardware" value="esp32" />
-          <div style="float:left;width:80px;text-align:right;margin-right:10px;">
-            <select selectType="boardPin" name="VP" style="height:20.5px;margin-top:56px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="VN" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D34" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D35" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D32" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D33" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D25" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D26" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D27" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D14" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D12" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D13" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-          </div>
-          `;
-        HTMLboard += `<img src="img/NodeMCU_ESP32S.png" style="float:left;height:450px;"/>`;
-        HTMLboard += `
-          <div style="float:left;width:80px;margin-left:10px;">
-            <select selectType="boardPin" name="D23" style="height:20.5px;margin-top:34.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D22" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="TX0" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="RX0" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D21" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D19" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D18" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D5"  style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="TX2" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="RX2" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D4"  style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D2"  style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D15" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
-          </div>
-          `;
-      break;
-      case 'NodeMCU_V2':
-        HTMLboard += `
-          <input type="hidden" name="board" value="NodeMCU_V2" />
-          <input type="hidden" name="hardware" value="esp8266" />
-          <div style="float:left;width:80px;text-align:right;margin-right:10px;">
-            <select selectType="boardPin" name="SD3" style="margin-top:138px;width:80px">${HTMLoptions}</select>
-          </div>
-          `;
-        HTMLboard += `<img src="img/NodeMCU_V2.png" style="float:left;height:450px;"/>`;
-        HTMLboard += `
-          <div style="float:left;width:80px;margin-left:10px;">
-            <select selectType="boardPin" name="D0" style="margin-top:47px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D1" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D2" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D3" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D4" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D5" style="margin-top:48px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D6" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D7" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D8" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-          </div>
-          `;
-      break;
-      case 'Wemos_D1':
-        HTMLboard += `<img src="img/Wemos_D1.png" style="float:left;height:500px;margin-left:100px"/>`;
-        HTMLboard +=`
-          <input type="hidden" name="board" value="Wemos_D1" />
-          <input type="hidden" name="hardware" value="esp8266" />
-          <div style="float:left;width:80px;margin-left:10px;">
-            <select selectType="boardPin" name="D13" style="margin-top:200px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D12" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D11" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D10" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D9" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D8" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D4" style="margin-top:42px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D3" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-            <select selectType="boardPin" name="D2" style="margin-top:2px;width:80px">${HTMLoptions}</select>
-          </div>
-          `;
-      break;
-      default:
-        var HTMLboard = "";
-      break;
-    }
+    HTMLboard = getBoardsTemplates(gpios, $(this).val());
     $("#boardArea").html(HTMLboard);
   });
 
@@ -206,7 +121,6 @@ $(function() {
         $('#sendBtn').show();
         return;
       }
-
 
       ipc.once('apReady', (emitter, data) => {
         // Open ws connection
@@ -252,40 +166,13 @@ $(function() {
           }, 2000);
         };
       });
-
-      /*
-      ws.send(`
-      {
-        "type":"circuit",
-        "circuit":
-        {
-          "outputs":{
-            "Out1":"(In1 AND NOT(In3)) OR (In2 AND In3)",
-            "Out2":"In1 XOR In2"
-          }
-          ,"inputs":{
-            "In1":1,
-            "In2":0,
-            "In3":{"values":[0,1,0,1],"timeslices":[1000,2000,1000,6000]}
-          }
-          ,"pin_map":{
-            "Out1":"D0",
-            "Out2":"D1"
-          }
-          ,"hardware":"esp8266"
-          ,"board":"NodeMCU_V2"
-          ,"cycles":1
-        }
-      }`);*/
     });
   }
 
-
-
-  
 });
 
-  </script>
+</script>
+
 
   <script src="execution_monitor/monitor_script.js"></script>
 
@@ -424,7 +311,6 @@ var MonitorController = function() {
   let initime = 0;
   function getChartData(str, first) {
 
-    //var objData = getTestData();
     let objData = str;
     let chartData = {};
     let firstDate = new Date(2000,1,2,0 ,0,0,0);
@@ -475,56 +361,6 @@ $('#stopRealtimeMonitor').click(function() {
     {type: "datalog_stop"}
   ));
 });
-
-  function getTestData() {
-    return JSON.parse(`
-    [{
-			"localtime": 160127839,
-			"inputs": {
-				"In2": 0,
-				"In1": 0
-			},
-			"outputs": {
-				"Out1": 0
-			}
-		}, {
-			"localtime": 160220191,
-			"inputs": {
-				"In2": 0,
-				"In1": 1
-			},
-			"outputs": {
-				"Out1": 0
-			}
-		}, {
-			"localtime": 160320854,
-			"inputs": {
-				"In2": 1,
-				"In1": 0
-			},
-			"outputs": {
-				"Out1": 0
-			}
-		}, {
-			"localtime": 160421000,
-			"inputs": {
-				"In2": 1,
-				"In1": 1
-			},
-			"outputs": {
-				"Out1": 1
-			}
-		}, {
-			"localtime": 160520686,
-			"inputs": {
-				"In2": 1,
-				"In1": 1
-			},
-			"outputs": {
-				"Out1": 1
-			}
-		}]`);
-  }
 
   </script>
 

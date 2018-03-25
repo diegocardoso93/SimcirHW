@@ -23,8 +23,8 @@ site_favicon: img/favicon.png
 pages:
 - 'Início': 'index.md'
 - 'Guia de Instruções':
-    - 'Início': 'pt_BR/10requisitos.md'
-    - 'Instalação': 'pt_BR/11instalacao.md'
+    - 'Início': 'pt_BR/10-inicio.md'
+    - 'Visão Geral': 'pt_BR/11-visao-geral.md'
 - Tutorial:
     - 'Início': 'pt_BR/blank.md'
 - 'Documentação':
