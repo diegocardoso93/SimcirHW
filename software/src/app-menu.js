@@ -49,8 +49,8 @@ const template = [
 	label: 'Ajuda',
 	submenu: [
       {
-        label: 'Tutorial',
-        click () { require('electron').shell.openExternal('https://electron.atom.io') }
+        label: 'Guia de Instruções',
+        click () { require('electron').shell.openExternal('http://simcirhw.readthedocs.io') }
       }
     ]
   }

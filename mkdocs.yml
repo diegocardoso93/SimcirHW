@@ -1,0 +1,25 @@
+site_name: SimcirHW - Documentação
+site_description: SimcirJS com integração com hardware baseado na tecnologia NodeMCU.
+repo_url: https://github.com/diegocardoso93/SimcirHW
+
+theme: readthedocs
+strict: true
+
+markdown_extensions:
+#http://pythonhosted.org/Markdown/extensions/admonition.html
+- admonition:
+- toc:
+    permalink: True
+
+site_favicon: img/favicon.png
+
+pages:
+- 'Início': 'index.md'
+- 'Guia de Instruções':
+    - 'Início': 'pt_BR/10-inicio.md'
+    - 'Visão Geral': 'pt_BR/11-visao-geral.md'
+    - 'Primeiros Passos': 'pt_BR/12-primeiros-passos.md'
+- Tutorial:
+    - 'Início': 'pt_BR/blank.md'
+- 'Documentação':
+    - 'Início': 'pt_BR/blank.md'

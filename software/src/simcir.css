@@ -220,3 +220,7 @@ TABLE.simcir-doc-params-table TD {
           border-radius: 4px;
   background-color: #f0f0f0;
 }
+
+button {
+  padding: 2px 6px
+}
