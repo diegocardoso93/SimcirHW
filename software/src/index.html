@@ -42,7 +42,11 @@
       <section id="content3">
         <button id="startRealtimeMonitor">start</button>
         <button id="stopRealtimeMonitor">stop</button>
-        <div id="chartsContainer"></div>
+        <div id="chartsContainer" style="max-height:400px;overflow-y:scroll;width:100%">
+        </div>
+        <p id="logContainerLabel" style="margin:0;margin-top:6px;display:none;">Log de execução</p>
+        <div id="logContainer" style="max-height:200px;overflow-y:scroll;width:100%;font-size:10px;">
+        </div>
       </section>
     </main>
 
@@ -176,13 +180,6 @@ $(function() {
 
   <script src="execution_monitor/monitor_script.js"></script>
 
-  <style>
-    #chartsContainer, [id^=chart_] {
-      width: 100%;
-      height: 200px;
-    }
-  </style>
-
   <script src="execution_monitor/amcharts.js"></script>
   <script src="execution_monitor/serial.js"></script>
   <script src="execution_monitor/light.js"></script>
@@ -200,10 +197,13 @@ var MonitorController = function() {
   let charts = [];
 
   function makeCharts(str) {
+    $('#logContainerLabel').show();
+    $('#logContainer').append(str + '--------------------------------------------------');
+
     let chartData = getChartData(str, true);
     $.each(chartData, (pinLabel, dataProvider) => {
       console.log("chart", pinLabel, dataProvider);
-      $('#chartsContainer').append('<div id="chart_' + pinLabel + '"></div>');
+      $('#chartsContainer').append('<div id="chart_' + pinLabel + '" style="width:100%;height:200px"></div>');
 
       let chartConfig = {
         "type": "serial",
