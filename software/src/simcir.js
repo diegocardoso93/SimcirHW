@@ -1907,6 +1907,7 @@ simcir.$ = function() {
       var ckt_valid = 0;
       var devIdCount = 0;
       var messageToSend = {};
+      var truthTable = {equations:[],values:[]};
       $devicePane.children('.simcir-device').each(function() {
         var $dev = $(this);
         var device = controller($dev);
@@ -1964,7 +1965,7 @@ simcir.$ = function() {
         });
         return devType;
       };
-      var forTheEnd = function(id, connectors, devices, arrRet) {
+      var forTheEnd = function (id, connectors, devices, arrRet) {
         if (id == "") return;
         var ids = getDevIdToByFrom(connectors, id);
         ids.forEach(function (id) {
@@ -2024,6 +2025,31 @@ simcir.$ = function() {
         return st.pop();
       };
 
+      var padDigits = function (number, digits) {
+        return Array(Math.max(digits - String(number).length + 1, 0)).join(0) + number;
+      };
+
+      var tencReplace = function (strin) {
+        strin = strin.split('NAND').join('!.');
+        strin = strin.split('XNOR').join('!*');
+        strin = strin.split('NOR').join('!+');
+        strin = strin.split('AND').join('.');
+        strin = strin.split('OR').join('+');
+        strin = strin.split('XOR').join('*');
+        strin = strin.split('NOT').join('!');
+        return strin;
+      }
+      var tdecReplace = function (strin) {
+        strin = strin.split('!.').join('NAND');
+        strin = strin.split('!*').join('XNOR');
+        strin = strin.split('!+').join('NOR');
+        strin = strin.split('.').join('AND');
+        strin = strin.split('+').join('OR');
+        strin = strin.split('*').join('XOR');
+        strin = strin.split('!').join('NOT');
+        return strin;
+      }
+
       var sendOutputs = {};
       if (arrOutputs.length > 0) {
         $.each(arrOutputs, function (i, devOut) {
@@ -2033,13 +2059,36 @@ simcir.$ = function() {
           forTheEnd(devOut.id, connectors, devices, arrRet);
           var str_rpn = arrRet.reverse().join(' ');
           str_rpn = rpnToInfix(str_rpn);
-          var parse_result = CircuitParser.parse(str_rpn);
-          sendOutputs[devOut.label] = str_rpn;
-          if (!(typeof(parse_result) === 'object')) {
-            ckt_valid = 1;
-            message = LANG["SUC_VALID_CIRCUIT"];
-          } else {
-            message = LANG["ERR_INVALID_CIRCUIT"];
+          if (typeof(str_rpn) !== "undefined") {
+            var parse_result = CircuitParser.parse(str_rpn);
+            sendOutputs[devOut.label] = str_rpn;
+            if (!(typeof(parse_result) === 'object')) {
+              ckt_valid = 1;
+              message = LANG["SUC_VALID_CIRCUIT"];
+              // truth table
+              truthTable.equations.push(devOut.label + " = " + str_rpn);
+              truthTable.values[i] = [];
+              for (var lin=0;lin<Math.pow(2, arrInputs.length);lin++) {
+                var arrBinValues = padDigits((lin >>> 0).toString(2), arrInputs.length).split('');
+                var str_equation = str_rpn;
+                var arrLin = [];
+                str_equation = tencReplace(str_equation);
+                $.each(arrInputs, function (i, devIn) {
+                  str_equation = str_equation.split(devIn.label).join(arrBinValues[i]);
+                  var _t = {};
+                  _t[devIn['label']] = arrBinValues[i];
+                  arrLin.push(_t);
+                });
+                str_equation = tdecReplace(str_equation);
+                var out_result = CircuitParser.parse(str_equation);
+                var _t = {};
+                _t[devOut['label']] = out_result;
+                arrLin.push(_t);
+                truthTable.values[i].push(arrLin);
+              }
+            } else {
+              message = LANG["ERR_INVALID_CIRCUIT"];
+            }
           }
         });
         var sendInputs = {};
@@ -2082,10 +2131,38 @@ simcir.$ = function() {
         message = LANG["ERR_OUT_FAULT"];
       }
 
+      var drawTruthTable = function() {
+        console.log(truthTable);
+        var HTMLTruthTable = '<div style="overflow:scroll;max-height:400px;max-width:600px">';
+        truthTable.equations.forEach((eq, i) => {
+          HTMLTruthTable += '<div><b>Equação</b></div>' + eq + '<br/>';
+          HTMLTruthTable += '<div><b>Tabela Verdade</b></div>';
+          HTMLTruthTable += '<table><thead><tr>';
+          truthTable.values[i][0].forEach((k, v) => {
+            HTMLTruthTable += '<td>' + Object.keys(k) + '</td>';
+          });
+          HTMLTruthTable += '</tr></thead><tbody>';
+          truthTable.values[i].forEach((lin, i) => {
+            HTMLTruthTable += '<tr>';
+            lin.forEach((obj, i) => {
+              HTMLTruthTable += '<td>' + Object.values(obj) + '</td>';
+            });
+            HTMLTruthTable += '</tr>';
+          });
+          HTMLTruthTable += '</tbody></table>'
+        });
+        HTMLTruthTable += '</div>';
+        showDialog('',
+          $('<div>' + HTMLTruthTable + '</div>')).on('close', function () {
+          $(this).find('.simcir-workspace').trigger('dispose');
+        });
+      }
+
       return {
         valid: ckt_valid,
         message: message,
-        messageToSend: messageToSend
+        messageToSend: messageToSend,
+        truthTable: drawTruthTable
       };
     }
 
