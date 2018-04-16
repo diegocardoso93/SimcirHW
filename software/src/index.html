@@ -24,6 +24,7 @@
           <button id="getDataBtn">v get data v</button>
           <button id="setDataBtn">^ set data ^</button>
           <button id="validateBtn">validate</button>
+          <button id="truthTableBtn" style="margin-left:100px">tabela verdade</button>
         </div>
         <textarea id="dataArea" style="width:600px; height:200px;"></textarea>
       </section>
@@ -71,7 +72,7 @@
 
 var circuitMessage = {};
 var gpios = {};
-var ws
+var ws;
 $(function() {
 
   var $s = simcir;
@@ -99,6 +100,10 @@ $(function() {
   });
   $('#sendBtn').click(function() {
     sendCircuit();
+  });
+  $('#truthTableBtn').click(function() {
+    circuitMessage = $s.controller($simcir.find('.simcir-workspace')).getCircuitMessage();
+    circuitMessage.truthTable();
   });
 
   // load default (just specifies circuit size).
@@ -196,11 +201,11 @@ var MonitorController = function() {
 
   let charts = [];
 
-  function makeCharts(str) {
+  function makeCharts(jsonObject) {
     $('#logContainerLabel').show();
-    $('#logContainer').append(str + '--------------------------------------------------');
+	  addLog(jsonObject);
 
-    let chartData = getChartData(str, true);
+    let chartData = getChartData(jsonObject, true);
     $.each(chartData, (pinLabel, dataProvider) => {
       console.log("chart", pinLabel, dataProvider);
       $('#chartsContainer').append('<div id="chart_' + pinLabel + '" style="width:100%;height:200px"></div>');
@@ -287,18 +292,14 @@ var MonitorController = function() {
     }
   }
 
-  function updateMonitorData(str) {
-    //console.log("asdas",charts);
-    //monitorData = str;
+  function updateMonitorData(jsonObject) {
+    addLog(jsonObject);
     console.log(charts)
-    let chartData = getChartData(str, false);
+    let chartData = getChartData(jsonObject, false);
     let c = 0;
     $.each(chartData, (pinLabel, obj) => {
-      //charts[c].dataProvider.push({date: obj[0].date, value: charts[c].dataProvider[charts[c].dataProvider.length-1].value});
       $.each(obj, (key, tobj) => {
-        //console.log("DSA",this.charts[c].dataProvider[this.charts[c].dataProvider.length-1].ts,tobj.ts )
-        //date.setDate(this.charts[c].dataProvider[this.charts[c].dataProvider.length-1].date.getMilliseconds() + tobj.date.getMilliseconds())
-        charts[c].dataProvider.push({
+		charts[c].dataProvider.push({
           date: tobj.date,
           value: tobj.value
         });
@@ -306,6 +307,14 @@ var MonitorController = function() {
       charts[c].validateData();
       c++;
     });
+  }
+
+  function addLog(jsonObject) {
+    let str_log = "----------------------------<br/>";
+    str_log += "Tempo    : " + jsonObject.l + "<br/>";
+    str_log += "Entradas : " + JSON.stringify(jsonObject['i']) + "<br/>";
+    str_log += "Saídas   : " + JSON.stringify(jsonObject['o']) + "<br/>";
+    $('#logContainer').prepend(str_log);
   }
 
   let initime = 0;
