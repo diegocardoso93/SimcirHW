@@ -23,7 +23,7 @@
         <div>
           <button id="getDataBtn">v get data v</button>
           <button id="setDataBtn">^ set data ^</button>
-          <button id="validateBtn">validate</button>
+          <button id="validateBtn">validar circuito</button>
           <button id="truthTableBtn" style="margin-left:100px">tabela verdade</button>
         </div>
         <textarea id="dataArea" style="width:600px; height:200px;"></textarea>
@@ -111,8 +111,9 @@ $(function() {
 
   $('#boardSelector').change(function() {
     var HTMLboard = "";
+    console.log(circuitMessage.messageToSend);
     circuitMessage = $s.controller($simcir.find('.simcir-workspace')).getCircuitMessage();
-    gpios = $.extend({},circuitMessage.messageToSend.circuit.inputs, circuitMessage.messageToSend.circuit.outputs);
+    var gpios = $.extend({},circuitMessage.messageToSend.circuit.inputs, circuitMessage.messageToSend.circuit.outputs);
     HTMLboard = getBoardsTemplates(gpios, $(this).val());
     $("#boardArea").html(HTMLboard);
   });
@@ -123,6 +124,47 @@ $(function() {
 
   function sendCircuit() {
     //$('#sendBtn').hide();
+
+    var arrOut = Object.keys(circuitMessage.messageToSend.circuit.outputs);
+    var arrIn = Object.keys(circuitMessage.messageToSend.circuit.inputs);
+    var pinMap = {};
+    var error = false;
+    $('select[selectType=boardPin]').each(function (i, el) {
+      if (arrOut.includes($(el).val())) {
+        var index = arrOut.indexOf($(el).val());
+        if (index != -1) {
+          arrOut.splice(index, 1);
+        } else {
+          swal("Há pinos configurados repetidos.");
+          error = true;
+          return;
+        }
+      } else if (arrIn.includes($(el).val())) {
+        var index = arrIn.indexOf($(el).val());
+        if (index != -1) {
+          arrIn.splice(index, 1);
+        } else {
+          swal("Há pinos configurados repetidos.");
+          error = true;
+          return;
+        }
+      } else if ($(el).val() != ""){
+        swal("Há pinos configurados repetidos.");
+        error = true;
+        return;
+      }
+      if ($(el).val() != "") {
+        pinMap[$(el).val()] = $(el).attr('name');
+      }
+    });
+    if (arrOut.length > 0) {
+      swal("Todas as saídas devem ser mapeadas.");
+      error = true;
+    }
+    if (error) {
+      return;
+    }
+
     reqIpcRef.sender.send('response', { reason: 'checkWifi' });
     ipc.on('checkWifi', (emitter, data) => {
       if (!data['connected']) {
@@ -152,14 +194,18 @@ $(function() {
           console.log('open ws connection');
 
           var arrOut = Object.keys(circuitMessage.messageToSend.circuit.outputs);
-          var qtdOut = arrOut.length;
-          var countOut = 0;
+          var arrIn = Object.keys(circuitMessage.messageToSend.circuit.inputs);
           var pinMap = {};
           $('select[selectType=boardPin]').each(function (i, el) {
             // @TODO: validar se todos outputs foram mapeados e se não repetiu
-            //if (arrOut.includes($(el).val())) {
-            //	countOut++;
-            //}
+            if (arrOut.includes($(el).val())) {
+              var index = arrOut.indexOf($(el).val());
+              if (index != -1){
+                arrOut.splice(index, 1);
+              } else {
+                swal("Há pinos configurados repetidos.");
+              }
+            }
             if ($(el).val() != "") {
               pinMap[$(el).val()] = $(el).attr('name');
             }

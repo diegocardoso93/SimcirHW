@@ -2103,14 +2103,18 @@ simcir.$ = function() {
                 sendInputs[devIn['label']] = 0;
               } else if (x.type == 'OSC') {
                 sendInputs[devIn['label']] = {};
-                sendInputs[devIn['label']]['timeslices'] = x.config.timeslices;
-                sendInputs[devIn['label']]['values'] = x.config.values;
-                var acum = 0;
-                x.config.timeslices.forEach((t) => {
-                  acum += t;
-                });
-                if (acum > maxtime) {
-                  maxtime = acum;
+                if (typeof (x.config) == 'undefined') {
+                  message = 'Primeiro configure o tempo da entrada do OSC.';
+                } else {
+                  sendInputs[devIn['label']]['timeslices'] = x.config.timeslices;
+                  sendInputs[devIn['label']]['values'] = x.config.values;
+                  var acum = 0;
+                  x.config.timeslices.forEach((t) => {
+                    acum += t;
+                  });
+                  if (acum > maxtime) {
+                    maxtime = acum;
+                  }
                 }
               }
             }
@@ -2137,9 +2141,9 @@ simcir.$ = function() {
         truthTable.equations.forEach((eq, i) => {
           HTMLTruthTable += '<div><b>Equação</b></div>' + eq + '<br/>';
           HTMLTruthTable += '<div><b>Tabela Verdade</b></div>';
-          HTMLTruthTable += '<table><thead><tr>';
+          HTMLTruthTable += '<table class="truthTable"><thead><tr>';
           truthTable.values[i][0].forEach((k, v) => {
-            HTMLTruthTable += '<td>' + Object.keys(k) + '</td>';
+            HTMLTruthTable += '<th>' + Object.keys(k) + '</th>';
           });
           HTMLTruthTable += '</tr></thead><tbody>';
           truthTable.values[i].forEach((lin, i) => {
