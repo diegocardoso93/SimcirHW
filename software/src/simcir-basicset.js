@@ -775,7 +775,7 @@
     g.closePath();
     var out1 = device.addOutput();
     var timerId = null;
-
+console.log(device)
     var arrValues = device.config ? device.config.values : [];
     var arrDelays = device.config ? device.config.timeslices : [];
     var osc_dblClickHandler = function(event) {

@@ -25,7 +25,7 @@ var getBoardsTemplates = function(gpios, option) {
             <select selectType="boardPin" name="D13" style="height:20.5px;margin-top:1.5px;width:80px">${HTMLoptions}</select>
           </div>
           `;
-      HTMLboard += `<img src="img/NodeMCU_ESP32S.png" style="float:left;height:450px;"/>`;
+      HTMLboard += `<img src="images/NodeMCU_ESP32S.png" style="float:left;height:450px;"/>`;
       HTMLboard += `
           <div style="float:left;width:80px;margin-left:10px;">
             <select selectType="boardPin" name="D23" style="height:20.5px;margin-top:34.5px;width:80px">${HTMLoptions}</select>
@@ -52,7 +52,7 @@ var getBoardsTemplates = function(gpios, option) {
             <select selectType="boardPin" name="SD3" style="margin-top:138px;width:80px">${HTMLoptions}</select>
           </div>
           `;
-      HTMLboard += `<img src="img/NodeMCU_V2.png" style="float:left;height:450px;"/>`;
+      HTMLboard += `<img src="images/NodeMCU_V2.png" style="float:left;height:450px;"/>`;
       HTMLboard += `
           <div style="float:left;width:80px;margin-left:10px;">
             <select selectType="boardPin" name="D0" style="margin-top:47px;width:80px;height:21px">${HTMLoptions}</select>
@@ -68,7 +68,7 @@ var getBoardsTemplates = function(gpios, option) {
           `;
       break;
     case 'Wemos_D1':
-      HTMLboard += `<img src="img/Wemos_D1.png" style="float:left;height:500px;margin-left:100px"/>`;
+      HTMLboard += `<img src="images/Wemos_D1.png" style="float:left;height:500px;margin-left:100px"/>`;
       HTMLboard += `
           <input type="hidden" name="board" value="Wemos_D1" />
           <input type="hidden" name="hardware" value="esp8266" />

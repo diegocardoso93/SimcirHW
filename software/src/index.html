@@ -5,6 +5,7 @@
     <link rel="stylesheet" type="text/css" href="simcir.css" />
     <link rel="stylesheet" type="text/css" href="simcir-basicset.css" />
     <link rel="stylesheet" type="text/css" href="tabs.css" />
+    <link rel="stylesheet" href="jquery-ui.css">
     <title>SimcirHW</title>
   </head>
   <body>
@@ -19,7 +20,9 @@
       <label for="tab3">Monitor de execução</label>
 
       <section id="content1">
-        <div id="mySimcir"></div>
+        <div id="resizableArea" style="width:600px;height:400px;">
+          <div id="mySimcir"></div>
+        </div>
         <div>
           <button id="getDataBtn">v get data v</button>
           <button id="setDataBtn">^ set data ^</button>
@@ -41,7 +44,7 @@
       </section>
 
       <section id="content3">
-        <button id="startRealtimeMonitor">start</button>
+        <!--<button id="startRealtimeMonitor">start</button>-->
         <button id="stopRealtimeMonitor">stop</button>
         <div id="chartsContainer" style="max-height:400px;overflow-y:scroll;width:100%">
         </div>
@@ -60,6 +63,7 @@
 <script type="text/javascript" src="misc/simcir-dso.js"></script>
 <script type="text/javascript" src="thirdpart/sweetalert.min.js"></script>
 <script type="text/javascript" src="simcirhw-boards.js"></script>
+<script type="text/javascript" src="jquery-ui.js"></script>
 <script type="text/javascript">
 
   const ipc = require('electron').ipcRenderer;
@@ -84,7 +88,10 @@ $(function() {
         $simcir.find('.simcir-workspace') ).text();
   };
   var setCircuitData = function(data) {
-    $s.setupSimcir($simcir, JSON.parse(data) );
+    var cktData = JSON.parse(data);
+    $s.setupSimcir($simcir, cktData);
+    $("#resizableArea").css('width', cktData.width);
+    $("#resizableArea").css('height', cktData.height);
   };
 
   // button click events
@@ -121,6 +128,14 @@ $(function() {
   //var host = window.document.location.host.replace(/:.*/, '');
   //ws = new WebSocket('ws://' + host + ':9061');
 
+  $("#resizableArea").resizable({
+    resize: function(event, ui) {
+      var cktObj = JSON.parse(getCircuitData());
+      cktObj.width = ui.size.width;
+      cktObj.height = ui.size.height;
+      setCircuitData(JSON.stringify(cktObj));
+    }
+  });
 
   function sendCircuit() {
     //$('#sendBtn').hide();

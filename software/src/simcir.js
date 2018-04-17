@@ -2136,7 +2136,6 @@ simcir.$ = function() {
       }
 
       var drawTruthTable = function() {
-        console.log(truthTable);
         var HTMLTruthTable = '<div style="overflow:scroll;max-height:400px;max-width:600px">';
         truthTable.equations.forEach((eq, i) => {
           HTMLTruthTable += '<div><b>Equação</b></div>' + eq + '<br/>';
