@@ -1247,7 +1247,7 @@ simcir.$ = function() {
       }
       // renumber z-index
       $.each(newDialogs, function(i) {
-        newDialogs[i].css('z-index', '' + (i + 1) );
+        newDialogs[i].css('z-index', '' + (i + 91) );
       });
       dialogs = newDialogs;
     };
@@ -1790,9 +1790,9 @@ simcir.$ = function() {
     $workspace.append($connectorPane);
     $workspace.append($temporaryPane);
 
-    var addDevice = function($dev) {
+    var addDevice = function($dev, origin) {
       $devicePane.append($dev);
-      $dev.trigger('deviceAdd');
+      $dev.trigger('deviceAdd', [origin]);
     };
 
     var removeDevice = function($dev) {
@@ -2268,7 +2268,7 @@ simcir.$ = function() {
           var pos = transform($dev);
           transform($dev, pos.x - toolboxWidth, pos.y);
           adjustDevice($dev);
-          addDevice($dev);
+          addDevice($dev, 'toolbox');
         } else {
           $dev.trigger('dispose');
         }
@@ -2418,7 +2418,7 @@ simcir.$ = function() {
 
     loadToolbox(data);
     $.each(buildCircuit(data, false, scope), function(i, $dev) {
-      addDevice($dev);
+      addDevice($dev, null);
     });
     updateConnectors();
 

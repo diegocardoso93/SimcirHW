@@ -775,8 +775,8 @@
     g.closePath();
     var out1 = device.addOutput();
     var timerId = null;
-    var arrValues = device.deviceDef.config ? device.deviceDef.config.values : [];
-    var arrDelays = device.deviceDef.config ? device.deviceDef.config.timeslices : [];
+    var arrValues = [];
+    var arrDelays = [];
     var $dlg;
 
     var osc_config = (event) => {
@@ -887,8 +887,13 @@
       $dlg = $s.showDialog(title, $bodyDialog);
     };
 
-    device.$ui.on('deviceAdd', function(event) {
-      //osc_dblClickHandler(event);
+    device.$ui.on('deviceAdd', function(event, origin) {
+      if (origin == 'toolbox') {
+        device.deviceDef.config = null;
+      } else {
+        arrValues = device.deviceDef.config ? device.deviceDef.config.values : [];
+        arrDelays = device.deviceDef.config ? device.deviceDef.config.timeslices : [];
+      }
       device.$ui.on('dblclick', osc_dblClickHandler);
       osc_config();
     });
@@ -914,8 +919,8 @@
 
   // register LED seg
   $s.registerDevice('7seg', createLEDSegFactory(_7Seg) );
-  $s.registerDevice('16seg', createLEDSegFactory(_16Seg) );
-  $s.registerDevice('4bit7seg', createLED4bitFactory() );
+  //$s.registerDevice('16seg', createLEDSegFactory(_16Seg) );
+  //$s.registerDevice('4bit7seg', createLED4bitFactory() );
 
   // register Rotary Encoder
   //$s.registerDevice('RotaryEncoder', createRotaryEncoderFactory() );
