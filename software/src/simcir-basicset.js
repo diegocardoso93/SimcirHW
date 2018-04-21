@@ -775,8 +775,8 @@
     g.closePath();
     var out1 = device.addOutput();
     var timerId = null;
-    var arrValues = [];
-    var arrDelays = [];
+    var arrValues = device.deviceDef.config ? device.deviceDef.config.values : [];
+    var arrDelays = device.deviceDef.config ? device.deviceDef.config.timeslices : [];
     var $dlg;
 
     var osc_config = (event) => {
@@ -890,9 +890,7 @@
     device.$ui.on('deviceAdd', function(event, origin) {
       if (origin == 'toolbox') {
         device.deviceDef.config = null;
-      } else {
-        arrValues = device.deviceDef.config ? device.deviceDef.config.values : [];
-        arrDelays = device.deviceDef.config ? device.deviceDef.config.timeslices : [];
+        console.log(device)
       }
       device.$ui.on('dblclick', osc_dblClickHandler);
       osc_config();

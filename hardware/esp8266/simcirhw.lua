@@ -49,16 +49,10 @@ function SimcirHW:configure_inputs()
         self:propagate()
         --self:register_log()
       end
-      print("step", self.actual_step);
+      --print("step", self.actual_step);
       if self.actual_step == self.steps then
         local tmessage = self:format_message_to_send()
         SCH.ws:send(tmessage)
-        --print("format", tmr.now())
-        --SCH.logger:format_message_to_send()
-        --print("send", tmr.now())
-        --SCH.ws:send(SCH.logger.message)
-        --print("sent", tmr.now())
-        --SCH.logger:clean()
         self.sliceTimer:stop()
         if self.circuit.maxtime > 0 then
           self.sliceTimer:stop()
@@ -113,9 +107,9 @@ function SimcirHW:get_expression(out)
 end
 
 function SimcirHW:propagate()
-  print('zzz', tmr.now())
+  --print('zzz', tmr.now())
   for k, v in pairs(self.state[self.actual_step].o) do
-    print('d :', self.circuit.pin_map[k], k, v, tmr.now())
+    --print('d :', self.circuit.pin_map[k], k, v, tmr.now())
     gpio.write(HwInterface.get_pin(self.circuit.pin_map[k]), v)
   end
 end
