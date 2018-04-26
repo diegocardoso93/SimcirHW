@@ -1904,7 +1904,7 @@ simcir.$ = function() {
 
     var getValidation = function() {
       var message = '';
-      var ckt_valid = 0;
+      var ckt_valid = -1;
       var devIdCount = 0;
       var messageToSend = {};
       var truthTable = {equations:[],values:[]};
@@ -2020,6 +2020,7 @@ simcir.$ = function() {
           }
         }
         if(st.length !== 1) {
+          ckt_valid = 0;
           message = LANG["ERR_INVALID_CIRCUIT"];
         }
         return st.pop();
@@ -2059,7 +2060,7 @@ simcir.$ = function() {
           forTheEnd(devOut.id, connectors, devices, arrRet);
           var str_rpn = arrRet.reverse().join(' ');
           str_rpn = rpnToInfix(str_rpn);
-          if (typeof(str_rpn) !== "undefined") {
+          if ((typeof(str_rpn) !== "undefined") && (ckt_valid !== 0)) {
             var parse_result = CircuitParser.parse(str_rpn);
             sendOutputs[devOut.label] = str_rpn;
             if (!(typeof(parse_result) === 'object')) {
@@ -2087,6 +2088,7 @@ simcir.$ = function() {
                 truthTable.values[i].push(arrLin);
               }
             } else {
+              ckt_valid = 0;
               message = LANG["ERR_INVALID_CIRCUIT"];
             }
           }
@@ -2104,6 +2106,7 @@ simcir.$ = function() {
               } else if (x.type == 'OSC') {
                 sendInputs[devIn['label']] = {};
                 if (typeof (x.config) == 'undefined') {
+                  ckt_valid = 0;
                   message = 'Primeiro configure o tempo da entrada do OSC.';
                 } else {
                   sendInputs[devIn['label']]['timeslices'] = x.config.timeslices;
@@ -2132,6 +2135,7 @@ simcir.$ = function() {
 
         console.log(messageToSend, 'xyz');
       } else {
+        ckt_valid = 0;
         message = LANG["ERR_OUT_FAULT"];
       }
 
@@ -2425,7 +2429,7 @@ simcir.$ = function() {
     var validateCircuit = function() {
       var validation = getValidation();
       if (validation.message.length>0) {
-        swal(validation.message);
+        swal(validation.valid ? "Tudo certo" : "Revisa aí", validation.message, validation.valid ? "success" : "error");
       }
     };
 

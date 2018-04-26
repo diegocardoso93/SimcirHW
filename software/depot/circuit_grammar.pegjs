@@ -30,7 +30,7 @@ Term
   / Operand
 
 Operand "Operand"
-  = (!"undefined" !"Out" [A-z]+[0-9]* / [0-1])* {
+  = (!"undefined" [A-z]+[0-9]* / [0-1])* {
   	return (text()==0 || text()==1) ?
     	parseInt(text(), 2) : 1;
   }

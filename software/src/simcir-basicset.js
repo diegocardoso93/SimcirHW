@@ -796,6 +796,7 @@
       var first = [];
 
       if (delays.length > 0) {
+        let valid = true;
         $.each(delays, function (i, elem) {
           if (typeof elem == 'function' || elem.value == '') {  // workaround
             return;
@@ -805,7 +806,14 @@
           time = Number(time);
           arrDelays.push(time);
           arrValues.push(val);
+          if ((val != 0 && val != 1) || time%100 != 0) {
+            valid = false;
+          }
         });
+        if (!valid){
+          swal("", "O valor de entrada deve ser binário (0 ou 1).\nO intervalo de tempo deve ser um valor múltiplo de 100.\nefetue os ajustes.", "error");
+          return;
+        }
       }
 
       arrDelays.forEach((time, i) => {
