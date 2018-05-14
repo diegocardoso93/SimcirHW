@@ -1127,7 +1127,7 @@ simcir.$ = function() {
         if (!controller($workspace).data().editable) {
           return;
         }
-        var title = 'Enter device name ';
+        var title = 'Rótulo  ';
         var $labelEditor = $('<input type="text"/>').
           addClass('simcir-label-editor').
           val($label.text() ).
@@ -1884,6 +1884,7 @@ simcir.$ = function() {
         deviceDef.x = pos.x;
         deviceDef.y = pos.y;
         deviceDef.label = device.getLabel();
+        device.config ? deviceDef.config = device.config : '';
         var state = device.getState();
         if (state != null) {
           deviceDef.state = state;
@@ -2105,7 +2106,7 @@ simcir.$ = function() {
                 sendInputs[devIn['label']] = 0;
               } else if (x.type == 'OSC') {
                 sendInputs[devIn['label']] = {};
-                if (typeof (x.config) == 'undefined') {
+                if (typeof (x.config) == 'undefined' || x.config == null || x.config.timeslices.length == 0) {
                   ckt_valid = 0;
                   message = 'Primeiro configure o tempo da entrada do OSC.';
                 } else {
@@ -2176,7 +2177,6 @@ simcir.$ = function() {
     var getText = function() {
 
       var data = getData();
-
       var buf = '';
       var print = function(s) {
         buf += s;
@@ -2428,9 +2428,7 @@ simcir.$ = function() {
 
     var validateCircuit = function() {
       var validation = getValidation();
-      if (validation.message.length>0) {
-        swal(validation.valid ? "Tudo certo" : "Revisa aí", validation.message, validation.valid ? "success" : "error");
-      }
+      return {valid: validation.valid, message: validation.message};
     };
 
     var getCircuitMessage = function() {

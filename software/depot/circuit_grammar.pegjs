@@ -9,7 +9,7 @@
 //	Grammar:
 //	Expression <- Term ( _ ('AND' / 'OR' / 'NAND' / 'NOR' / 'XOR' / 'XNOR') _ Term)*
 //	Term       <- _ '(' Expression ')' _ / 'NOT(' _ Expression _ ')' / Operand
-//	Operand    <- (!"undefined" !"Out" [A-z]+[0-9]* / [0-1])*
+//	Operand    <- (!"undefined" [A-z]+[0-9]* / [0-1])*
 //	_          <- [ \t\n\r]*
 
 Expression

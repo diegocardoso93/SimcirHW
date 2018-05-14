@@ -780,10 +780,10 @@
     var $dlg;
 
     var osc_config = (event) => {
-      if (arrValues.length == 0 && $('input[name="value[]"]').length == 0) {
-        alert("adicione uma sequencia");
-        return;
-      }
+      //if (arrValues.length == 0 && $('input[name="value[]"]').length == 0) {
+      //  alert("adicione uma sequencia");
+      //  return;
+      //}
       if ($dlg) {
         arrDelays = [];
         arrValues = [];
@@ -898,7 +898,6 @@
     device.$ui.on('deviceAdd', function(event, origin) {
       if (origin == 'toolbox') {
         device.deviceDef.config = null;
-        console.log(device)
       }
       device.$ui.on('dblclick', osc_dblClickHandler);
       osc_config();

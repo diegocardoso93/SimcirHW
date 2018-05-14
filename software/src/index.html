@@ -94,8 +94,10 @@
       setCircuitData($('#dataArea').val());
     });
     $('#validateBtn').click(function() {
-      $s.controller(
-        $simcir.find('.simcir-workspace') ).validate();
+      let validation = $s.controller($simcir.find('.simcir-workspace') ).validate();
+      if (validation.message.length>0) {
+        swal(validation.valid ? "Tudo certo" : "Revisa aí", validation.message, validation.valid ? "success" : "error");
+      }
     });
     $('#sendBtn').click(function() {
       sendCircuit();
@@ -103,6 +105,16 @@
     $('#truthTableBtn').click(function() {
       circuitMessage = $s.controller($simcir.find('.simcir-workspace')).getCircuitMessage();
       circuitMessage.truthTable();
+    });
+
+    $('#tab2').click(function() {
+      let validation = $s.controller($simcir.find('.simcir-workspace') ).validate();
+      if (validation.message.length>0) {
+        if (!validation.valid) {
+          swal("Revisa aí", validation.message, "error");
+          return false;
+        }
+      }
     });
 
     // load default (just specifies circuit size).
