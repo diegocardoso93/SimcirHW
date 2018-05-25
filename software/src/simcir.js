@@ -2803,34 +2803,6 @@ simcir.$ = function() {
     };
   };
 
-  var formatMessageToSend = function() {
-/*
-{
-  "type":"circuit",
-  "circuit":
-  {
-    "outputs":{
-      "Out1":"(In1 AND NOT(In3)) OR (In2 AND In3)",
-      "Out2":"In1 XOR In2"
-    }
-    ,"inputs":{
-      "In1":1,
-      "In2":0,
-      "In3":{"values":[0,1,0,1],"timeslices":[100,200,100,600]}
-    }
-    ,"pin_map":{
-      "Out1":"D0",
-      "Out2":"D1"
-    }
-    ,"hardware":"esp8266"
-    ,"board":"NodeMCU_V2"
-    ,"cycles":1
-  }
-}
-*/
-
-  };
-
   // register built-in devices
   $s.registerDevice('In', createPortFactory('in') );
   $s.registerDevice('Out', createPortFactory('out') );

@@ -843,9 +843,9 @@
         });
       }, acTime, slices);
 
-      device.deviceDef.config = {};
-      device.deviceDef.config.values = arrValues;
-      device.deviceDef.config.timeslices = arrDelays;
+      device.config = {};
+      device.config.values = arrValues;
+      device.config.timeslices = arrDelays;
       if ($dlg) {
         $dlg.remove();
       }

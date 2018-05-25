@@ -12,6 +12,7 @@ end
  bitxor = infix(function(a, b) return a ~= b and 1 or 0 end)
  bitnor = infix(function(a, b) return bitnot(a -bitor- b) end)
 bitnand = infix(function(a, b) return bitnot(a -bitand- b) end)
+bitxnor = infix(function(a, b) return bitnot(a -bitxor- b) end)
 
 function convert_circuit(str)
   local map_replace = {
@@ -21,6 +22,7 @@ function convert_circuit(str)
     [' NAND ']=' -bitnand- ',
     [ ' NOR ']=' -bitnor- ' ,
     [ ' XOR ']=' -bitxor- ' ,
+    [ 'XNOR ']=' -bitxnor- ',
   }
   for old, new in pairs(map_replace) do
     str = string.gsub(str, old, new)
