@@ -47,18 +47,6 @@ function createWindow() {
     icon: __dirname + '/favicon.ico'
   });
 
-  /*
-  dialog.showSaveDialog(mainWindow,
-    {
-      title: 'Salvar como...',
-      buttonLabel: 'Salvar',
-      filters: [
-        {name: 'SimcirHW Schematic File', extensions: ['simcirhw']}
-      ]
-    },
-    (filename) => console.log(filename)
-  );*/
-
   //mainWindow.loadURL('http://localhost:9061');
 
   mainWindow.loadURL(url.format({
@@ -129,10 +117,41 @@ function createWindow() {
             console.log('Listening on http://localhost:9061');
           });
 
-
           connected = true;
         }
         event.sender.send('checkWifi', {connected: connected});
+
+      } else if (arg['reason'] === 'saveFile') {
+        dialog.showSaveDialog(mainWindow,
+          {
+            title: 'Salvar como...',
+            buttonLabel: 'Salvar',
+            filters: [
+              {name: 'SimcirHW', extensions: ['json', 'simcirhw']}
+            ]
+          },
+          (filename) => {
+            if (typeof filename !== 'undefined') {
+              fs.writeFileSync(filename, arg['content'], 'utf-8');
+            }
+          }
+        );
+      } else if (arg['reason'] === 'openFile') {
+        dialog.showOpenDialog(mainWindow,
+          {
+            title: 'Abrir...',
+            buttonLabel: 'Abrir',
+            filters: [
+              {name: 'SimcirHW', extensions: ['json', 'simcirhw']}
+            ]
+          },
+          (filename) => {
+            if (typeof filename !== 'undefined') {
+              console.log(filename);
+              event.sender.send('readFile', {content: fs.readFileSync(filename[0], 'utf-8')});
+            }
+          }
+        );
       }
     });
   });

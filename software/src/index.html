@@ -23,12 +23,14 @@
     <div id="resizableArea" style="width:600px;height:400px;">
     <div id="mySimcir"></div>
     <div>
-      <button id="getDataBtn">salvar</button>
       <button id="setDataBtn">carregar</button>
+      <button id="getDataBtn">salvar</button>
       <button id="validateBtn">validar circuito</button>
       <button id="truthTableBtn" style="margin-left:100px">tabela verdade</button>
     </div>
+    <!--
     <textarea id="dataArea" style="width:600px; height:200px;"></textarea>
+    -->
   </section>
 
   <section id="content2">
@@ -39,7 +41,7 @@
       <option value="NodeMCU_ESP32S">NodeMCU ESP-32S WiFi ESP32</option>
     </select>
     <div id="boardArea" style="display:inline-block;margin-top:20px;"></div>
-    <button id="sendBtn">send ckt</button>
+    <button id="sendBtn">enviar circuito</button>
   </section>
 
   <section id="content3">
@@ -88,10 +90,12 @@
     };
     // button click events
     $('#getDataBtn').click(function() {
-      $('#dataArea').val(getCircuitData());
+      //$('#dataArea').val(getCircuitData());
+      reqIpcRef.sender.send('response', { reason: 'saveFile', content: getCircuitData() });
     });
     $('#setDataBtn').click(function() {
-      setCircuitData($('#dataArea').val());
+      //setCircuitData($('#dataArea').val());
+      reqIpcRef.sender.send('response', { reason: 'openFile' });
     });
     $('#validateBtn').click(function() {
       let validation = $s.controller($simcir.find('.simcir-workspace') ).validate();
@@ -136,6 +140,10 @@
         cktObj.height = ui.size.height;
         setCircuitData(JSON.stringify(cktObj));
       }
+    });
+
+    ipc.on('readFile', (emitter, data) => {
+      setCircuitData(data.content);
     });
 
     function sendCircuit() {
