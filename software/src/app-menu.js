@@ -5,6 +5,7 @@ const template = [
   {
     label: 'Arquivo',
     submenu: [
+      {role: 'print', label: 'Imprimir'},
       {role: 'quit', label: 'Sair'}
     ]
   },

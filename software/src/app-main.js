@@ -23,6 +23,28 @@ if (serve) {
 
 function createWindow() {
 
+  appMenu[0].submenu[0].click = () => {
+    mainWindow.webContents.printToPDF({}, (error, data) => {
+      if (error) throw error;
+      dialog.showSaveDialog(mainWindow,
+        {
+          title: 'Salvar como...',
+          buttonLabel: 'Salvar',
+          filters: [
+            {name: 'PDF', extensions: ['pdf']}
+          ]
+        },
+        (filename) => {
+          if (typeof filename !== 'undefined') {
+            fs.writeFile(filename, data, (error) => {
+              if (error) throw error;
+              console.log('Write PDF successfully.');
+            });
+          }
+        }
+      );
+    });
+  };
   Menu.setApplicationMenu(Menu.buildFromTemplate(appMenu));
 
   let width = 1200, height = 860;
@@ -67,15 +89,7 @@ function createWindow() {
   //mainWindow.setProgressBar(0.5, {mode: 'normal'});
 
   mainWindow.webContents.on('did-finish-load', () => {
-    /*
-    mainWindow.webContents.printToPDF({}, (error, data) => {
-      if (error) throw error;
-      fs.writeFile(path.join(__dirname, '/print.pdf'), data, (error) => {
-        if (error) throw error;
-        console.log('Write PDF successfully.');
-      });
-    });
-    */
+
     let WiFiControl = require('wifi-control');
 
     WiFiControl.init({
@@ -147,7 +161,6 @@ function createWindow() {
           },
           (filename) => {
             if (typeof filename !== 'undefined') {
-              console.log(filename);
               event.sender.send('readFile', {content: fs.readFileSync(filename[0], 'utf-8')});
             }
           }
