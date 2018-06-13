@@ -28,9 +28,6 @@
       <button id="validateBtn">validar circuito</button>
       <button id="truthTableBtn" style="margin-left:100px">tabela verdade</button>
     </div>
-    <!--
-    <textarea id="dataArea" style="width:600px; height:200px;"></textarea>
-    -->
   </section>
 
   <section id="content2">
@@ -88,13 +85,10 @@
       $("#resizableArea").css('width', cktData.width);
       $("#resizableArea").css('height', cktData.height);
     };
-    // button click events
     $('#getDataBtn').click(function() {
-      //$('#dataArea').val(getCircuitData());
       reqIpcRef.sender.send('response', { reason: 'saveFile', content: getCircuitData() });
     });
     $('#setDataBtn').click(function() {
-      //setCircuitData($('#dataArea').val());
       reqIpcRef.sender.send('response', { reason: 'openFile' });
     });
     $('#validateBtn').click(function() {
@@ -121,7 +115,6 @@
       }
     });
 
-    // load default (just specifies circuit size).
     setCircuitData('{ "width":600, "height":400 }');
     $('#boardSelector').change(function() {
       var HTMLboard = "";
@@ -130,8 +123,6 @@
       HTMLboard = getBoardsTemplates(gpios, $(this).val());
       $("#boardArea").html(HTMLboard);
     });
-    //var host = window.document.location.host.replace(/:.*/, '');
-    //ws = new WebSocket('ws://' + host + ':9061');
 
     $("#resizableArea").resizable({
       resize: function(event, ui) {
@@ -147,8 +138,6 @@
     });
 
     function sendCircuit() {
-      //$('#sendBtn').hide();
-
       var arrOut = Object.keys(circuitMessage.messageToSend.circuit.outputs);
       var arrIn = Object.keys(circuitMessage.messageToSend.circuit.inputs);
       var pinMap = {};
@@ -197,7 +186,6 @@
           return;
         }
         ipc.once('apReady', (emitter, data) => {
-          // Open ws connection
           ws = new WebSocket('ws://localhost:9061');
           var startMonitor = 0; var stopMonitor = 0;
           var monitorController = MonitorController();
@@ -247,8 +235,6 @@
 </script>
 
 
-<script src="execution_monitor/monitor_script.js"></script>
-
 <script src="execution_monitor/amcharts.js"></script>
 <script src="execution_monitor/serial.js"></script>
 <script src="execution_monitor/light.js"></script>
@@ -270,7 +256,6 @@
 
       let chartData = getChartData(str, true);
       $.each(chartData, (pinLabel, dataProvider) => {
-        console.log("chart", pinLabel, dataProvider);
         $('#chartsContainer').append('<div id="chart_' + pinLabel + '" style="width:100%;height:200px"></div>');
         let chartConfig = {
           "type": "serial",

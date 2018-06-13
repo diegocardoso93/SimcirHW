@@ -10,7 +10,6 @@ local HwInterface = {}
 
 
 local MINIMAL_SLICE_SIZE = 100
-local LOGGER_REFRESH_RATE = 100
 
 function SimcirHW:eval_message(str_msg)
   local message = sjson.decode(str_msg)
@@ -40,16 +39,13 @@ function SimcirHW:configure_hw_gpios()
 end
 
 function SimcirHW:configure_inputs()
-  print('here', node.heap())
   if self.circuit.maxtime > 0 then
     self.sliceTimer = tmr.create()
     self.sliceTimer:register(MINIMAL_SLICE_SIZE, tmr.ALARM_AUTO, function()
       if type(self.state[self.actual_step]) == "table" then
         self.state[self.actual_step].l = tmr.now()
         self:propagate()
-        --self:register_log()
       end
-      --print("step", self.actual_step);
       if self.actual_step == self.steps then
         local tmessage = self:format_message_to_send()
         SCH.ws:send(tmessage)
@@ -107,9 +103,7 @@ function SimcirHW:get_expression(out)
 end
 
 function SimcirHW:propagate()
-  --print('zzz', tmr.now())
   for k, v in pairs(self.state[self.actual_step].o) do
-    --print('d :', self.circuit.pin_map[k], k, v, tmr.now())
     gpio.write(HwInterface.get_pin(self.circuit.pin_map[k]), v)
   end
 end
@@ -120,8 +114,6 @@ function SimcirHW:start()
   self.executing = true
   self:configure_hw_gpios()
   self:configure_inputs()
-  --self:propagate()
-  --self:execute()
   self.sliceTimer:start()
 end
 
@@ -162,7 +154,6 @@ function SimcirHW:generate_lookup()
           str_exec = str_exec .. k .. " = " .. v .. ";"
         end
         for out, exp in pairs(self.expressions) do
-          --print("dbg > ", exp, str_exec, tmr.now())
           self.state[ind].o[out] = loadstring(str_exec .. "return " .. exp)()
         end
       end
@@ -221,8 +212,6 @@ function simcirhw:new()
   self.slice_timer_counter = 0
   self.executing = false
 
-
-  --self.lookup = {}
   self.steps = 1
   self.actual_step = 1
 

@@ -5,7 +5,6 @@ const path = require('path');
 const url = require('url');
 const fs = require('fs');
 const appMenu = require('./app-menu');
-const appServer = require('./app-server');
 
 let mainWindow, serve;
 const args = process.argv.slice(1);
@@ -109,7 +108,6 @@ function createWindow() {
         let ifaceState = WiFiControl.getIfaceState();
         let connected = false;
         if (ifaceState['ssid'] === 'SimcirHW') {
-          //appServer.startServer();
 
           app.use(express.static(path.join(__dirname, '/')));
 
