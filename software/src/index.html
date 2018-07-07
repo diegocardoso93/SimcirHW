@@ -105,7 +105,7 @@
       circuitMessage.truthTable();
     });
 
-    $('#tab2').click(function() {
+    $('#tab2, #tab3').click(function() {
       let validation = $s.controller($simcir.find('.simcir-workspace') ).validate();
       if (validation.message.length>0) {
         if (!validation.valid) {

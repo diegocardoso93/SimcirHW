@@ -76,7 +76,7 @@ function createWindow() {
     slashes: true
   }))
 
-  if (serve) {
+  if (serve || true) { // temporarily console active
     mainWindow.webContents.openDevTools();
   }
 
