@@ -2,4 +2,4 @@
 /software/app-builds
 /software/dist
 /software/node_modules
-/software/package-lock.json
+/software/src/node_modules
