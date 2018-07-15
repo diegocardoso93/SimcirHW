@@ -1,3 +1,3 @@
 # SimcirHW
  - ## 1 bit Adder
-<img src="https://im4.ezgif.com/tmp/ezgif-4-0296082606.gif" />
+<img src="https://raw.githubusercontent.com/diegocardoso93/SimcirHW/master/1bit_adder.gif" />
